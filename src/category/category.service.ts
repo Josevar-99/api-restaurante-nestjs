@@ -19,16 +19,16 @@ export class CategoryService {
         };
       }
   
-      const newCar = {
+      const newCategory = {
         id: this.Category.length + 1,
         name: createCategoryDto.name.toLowerCase(),
-        year:createCarDto.year,
+    
       }
   
-      this.cars.push(newCar);
+      this.categories.push(newCategory);
       return {
         message: 'Auto ingresado con exito',
-        car: newCar
+        car: newCategory
       }
   
     }
