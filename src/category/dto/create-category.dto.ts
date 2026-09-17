@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateCategoryDto {
  
@@ -7,5 +7,9 @@ export class CreateCategoryDto {
     @MinLength(4, {message: 'Ingrese como minimo 4 caracteres'})
     @MaxLength(100, {message: 'Solo puedes incluilr 100 caracteres'})
     name: string;
+
+    @IsBoolean()
+    @IsOptional()
+    state?: boolean;
 
 }

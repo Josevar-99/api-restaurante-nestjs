@@ -1,16 +1,21 @@
+
 import { Injectable } from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto.js';
 import { UpdateBrandDto } from './dto/update-brand.dto.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Brand } from './entities/brand.entity.js';
+
 
 @Injectable()
 export class BrandService {
-  private readonly brands: any[] = [
-    { id: 1, name: 'toyota'},
-    { id: 2, name: 'renault'},
-    { id: 3, name: 'zuzuki'},
-    { id: 4, name: 'kawasaki'},
-    
-  ];
+  constructor (
+    @InjectRepository(Brand)
+
+  
+  private readonly brandRepository: Repository<Brand>,
+  ){}
+  
 
   create(createBrandDto: CreateBrandDto) {
     if (!createBrandDto) {
@@ -19,12 +24,10 @@ export class BrandService {
       };
     }
 
-    const newBrand = {
-      id: this.brands.length + 1,
-      name: createBrandDto.name.toLowerCase(),
-    };
+    const temporalBrand = this.brandRepository.create(createBrandDto);
 
-    this.brands.push(newBrand);
+    const newBrand = this.brandRepository.save(temporalBrand)
+
 
     return {
       message: 'Marca creada con exito',
@@ -33,7 +36,7 @@ export class BrandService {
   }
 
   findAll() {
-    return this.brands;;
+    return this.brandRepository;;
   }
 
   findOne(id: number) {
@@ -44,7 +47,7 @@ export class BrandService {
       }
     }
 
-    const result = this.brands.find((brand)=>brand.id===id)
+    const result = this.brandRepository.find({ where: {id: 'id'}})
 
     if(!result){
       return {
@@ -77,13 +80,13 @@ export class BrandService {
       }
     }
 
-    if (brand.name.toLowerCase() === newName.toLowerCase() ) {
+    if (Brand.name.toLowerCase() === newName.toLowerCase() ) {
       return{
         message: 'No se registran cambios'
       }
     }
 
-    const updatedBrand = this.brands[id-1].name = newName;
+    const updatedBrand = await this.brandRepository.findOneBy({id:'id'}).name = newName;
         
     console.log({updatedBrand});
 

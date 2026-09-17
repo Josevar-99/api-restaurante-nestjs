@@ -1,14 +1,17 @@
-import { Category } from './entities/category.entity';
+import { Category } from './entities/category.entity.js';
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
 @Injectable()
 export class CategoryService {
-  private readonly Category: any[] = [
-      {id: 1, name: 'Fast food', year:2000},
-      {id: 2, name: 'healthy', year:2000},
-      {id: 3, name: 'Soaps', year: 1990}
+  private readonly Categories: any[] = [
+      {id: 1, name: 'Entradas', state:true },
+      {id: 2, name: 'Platos fuertes.', state: true},
+      {id: 3, name: 'Bebidas.', state:true},
+      {id: 4, name: 'Postres.', state:true},
+      {id: 5, name: 'Hamburguesas.', state:true},
+      {id: 6, name: 'Ensaladas.', state:true},
     ];
   
   
@@ -20,21 +23,22 @@ export class CategoryService {
       }
   
       const newCategory = {
-        id: this.Category.length + 1,
+        id: this.Categories.length + 1,
         name: createCategoryDto.name.toLowerCase(),
+        state: createCategoryDto.state,
     
       }
   
-      this.categories.push(newCategory);
+      this.Categories.push(newCategory);
       return {
         message: 'Auto ingresado con exito',
-        car: newCategory
+        Category: newCategory
       }
   
     }
   
     findAll() {
-      return this.cars;
+      return this.Categories;
     }
   
     findOne(id: number) {
@@ -44,7 +48,7 @@ export class CategoryService {
           message: "Debe ingresar un ID"
         }
       }
-      const result = this.cars.find((Car)=>Car.id===id)
+      const result = this.Categories.find((Categories)=>Categories.id===id)
   
       if (!result){
         return {
@@ -54,66 +58,66 @@ export class CategoryService {
       }
       return {
         ok:true,
-        car: result
+        Category: result
       };
     }
     
   
   
-    update(id: number, updateCarDto: UpdateCarDto) {
-      const { name: newName } = updateCarDto;
+    update(id: number, updateCategoryDto: UpdateCategoryDto) {
+      const { name: newName } = updateCategoryDto;
   
       if (!newName) {
         return {
           ok: false,
-          message: 'Enter a new car name'
+          message: 'Enter a new category name'
         }
       }
   
-      const {ok, car } = this.findOne(id)
+      const {ok, Category } = this.findOne(id)
   
       if (!ok){
         return {
-          message: "Car not found"
+          message: "Category not found"
         }
       }
   
-      if (car.name.toLowerCase() === newName.toLowerCase()) {
+      if (Category.name.toLowerCase() === newName.toLowerCase()) {
         return {
           message: 'No se registran cambios'
         }
       }
   
   
-    const updatedCar = this.cars[id-1].name = newName
+    const updatedCategory = this.Categories[id-1].name = newName
     
-    console.log({updatedCar});
+    console.log({updatedCategory});
   
     return {
       ok:true,
-      message: 'Car updated',
-      car: updatedCar
+      message: 'Category updated',
+      Category: updatedCategory
     };
   
   }
     remove(id: number) {
   
-      const {ok, car } = this.findOne(id);
+      const {ok, Category } = this.findOne(id);
   
       if (!ok){
         return {
           ok:false,
-          message: "Car not found"
+          message: "Category not found"
         };
       }
   
-      const index = this.cars.findIndex((c) => c.id === id);
+      const index = this.Categories.findIndex((c) => c.id === id);
   
-      this.cars.splice(index, 1);
+      this.Categories.splice(index, 1);
   
       return {
         ok:true,
-        message: 'Car with id ${id} deleted '
+        message: 'Category has been deleted '
       };
   
     }
