@@ -7,25 +7,21 @@ import { HealthModule } from './health/health.module.js';
 import { BrandModule } from './brand/brand.module.js';
 import { CarModule } from './car/car.module.js';
 import { CategoryModule } from './category/category.module.js';
-
+import { EnvConfig } from './config/env.config.js';
+import { envValidationSchema } from './config/env.schema.validations.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [EnvConfig],
+      validationSchema: envValidationSchema
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: 'localhost', // o el nombre del servicio si tu app corre en Docker también
-        port: +configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USER'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: true,
+        ...typeConfig.get('database')
         }),
     }),
     HealthModule,

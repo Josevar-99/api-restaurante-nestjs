@@ -12,7 +12,7 @@ export class Brand {
     country: string;
     
     @Column()
-    IsActive: boolean;
+    isActive: boolean;
     
     @Column()
     createdAt: Date;

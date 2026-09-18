@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto.js';
 import { UpdateBrandDto } from './dto/update-brand.dto.js';
@@ -6,18 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Brand } from './entities/brand.entity.js';
 
-
 @Injectable()
 export class BrandService {
-  constructor (
+  constructor(
     @InjectRepository(Brand)
+    private readonly brandRepository: Repository<Brand>,
+  ) {}
 
-  
-  private readonly brandRepository: Repository<Brand>,
-  ){}
-  
-
-  create(createBrandDto: CreateBrandDto) {
+  async create(createBrandDto: CreateBrandDto) {
     if (!createBrandDto) {
       return {
         message: 'Error: falta nombre de la marca',
@@ -25,9 +20,8 @@ export class BrandService {
     }
 
     const temporalBrand = this.brandRepository.create(createBrandDto);
-
-    const newBrand = this.brandRepository.save(temporalBrand)
-
+    // Se debe usar await para esperar a que se guarde en la BD
+    const newBrand = await this.brandRepository.save(temporalBrand);
 
     return {
       message: 'Marca creada con exito',
@@ -35,69 +29,84 @@ export class BrandService {
     };
   }
 
-  findAll() {
-    return this.brandRepository;;
+  async findAll() {
+    // Retornamos todas las marcas de la base de datos
+    return await this.brandRepository.find();
   }
 
-  findOne(id: number) {
-    if(!id){
+  async findOne(id: string) {
+    if (!id) {
       return {
         ok: false,
-        message: "Debe ingresar un ID"
-      }
+        message: 'Debe ingresar un ID',
+      };
     }
 
-    const result = this.brandRepository.find({ where: {id: 'id'}})
+    // Corregido: pasar la variable id y usar findOneBy
+    const brand = await this.brandRepository.findOneBy({ id });
 
-    if(!result){
+    if (!brand) {
       return {
         ok: false,
-        message: "ID no encontrado"
-      }
+        message: 'ID no encontrado',
+      };
     }
 
     return {
       ok: true,
-      brand: result
+      brand,
     };
   }
 
-  update(id: number, updateBrandDto: UpdateBrandDto) {
+  async update(id: string, updateBrandDto: UpdateBrandDto) {
     const { name: newName } = updateBrandDto;
 
     if (!newName) {
       return {
         ok: false,
-        message: 'Ingrese un nuevo nombre'
-      }
+        message: 'Ingrese un nuevo nombre',
+      };
     }
 
-    const { ok, brand } = this.findOne(id)
+    // Se debe usar await ya que findOne ahora es asíncrono
+    const result = await this.findOne(id);
 
-    if(!ok){
+    if (!result.ok) {
       return {
-        message: "La marca no existe"
-      }
+        ok: false,
+        message: 'La marca no existe',
+      };
     }
 
-    if (Brand.name.toLowerCase() === newName.toLowerCase() ) {
-      return{
-        message: 'No se registran cambios'
-      }
+    const existingBrand = result.brand as Brand;
+
+    if (existingBrand.name.toLowerCase() === newName.toLowerCase()) {
+      return {
+        message: 'No se registran cambios',
+      };
     }
 
-    const updatedBrand = await this.brandRepository.findOneBy({id:'id'}).name = newName;
-        
-    console.log({updatedBrand});
+    // Actualizamos la propiedad y guardamos
+    existingBrand.name = newName;
+    const updatedBrand = await this.brandRepository.save(existingBrand);
 
     return {
       ok: true,
       message: 'Actualizado correctamente',
-      brand: updatedBrand
-    } ;
+      brand: updatedBrand,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} brand`;
+  async remove(id: string) {
+    const result = await this.findOne(id);
+    if (!result.ok) {
+      return { ok: false, message: 'La marca no existe' };
+    }
+
+    await this.brandRepository.delete(id);
+    return {
+      ok: true,
+      message: `Marca con id #${id} eliminada correctamente`,
+    };
   }
 }

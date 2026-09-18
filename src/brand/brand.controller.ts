@@ -19,16 +19,16 @@ export class BrandController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.brandService.findOne(+id);
+    return this.brandService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
-    return this.brandService.update(+id, updateBrandDto);
+    return this.brandService.update(id, updateBrandDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.brandService.remove(+id);
+    return this.brandService.remove(id);
   }
 }

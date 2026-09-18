@@ -2,51 +2,53 @@ import { Injectable } from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto.js';
 import { UpdateCarDto } from './dto/update-car.dto.js';
 import { Car } from './entities/car.entity.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CarService {
-  private readonly cars: any[] = [
-    {id: 1, name: 'ACCELERACERS', year:2000},
-    {id: 2, name: 'METALMANIACS', year:2000},
-    {id: 3, name: 'SUPRA', year: 1990}
-  ];
+  constructor(
+    @InjectRepository(Car)
+  private readonly carRepository: Repository<Car>, 
+) {}
 
 
-  create(createCarDto: CreateCarDto) {
+  async create(createCarDto: CreateCarDto) {
     if (!createCarDto) {
       return {
         message: 'Error falta el modelo del carro'
       };
     }
 
-    const newCar = {
-      id: this.cars.length + 1,
-      name: createCarDto.name.toLowerCase(),
-      year:createCarDto.year,
-    }
+  const temporalBrand = this.carRepository.create(createCarDto);
+    // Se debe usar await para esperar a que se guarde en la BD
+  const newCar = await this.carRepository.save(temporalBrand);
 
-    this.cars.push(newCar);
+
+  
     return {
       message: 'Auto ingresado con exito',
       car: newCar
-    }
+    };
 
   }
 
-  findAll() {
-    return this.cars;
+  async findAll() {
+    return await this.carRepository.find();
   }
 
-  findOne(id: number) {
+  async findOne(id: string) {
     if (!id){
       return {
         ok:false,
-        message: "Debe ingresar un ID"
-      }
+        message: "Debe ingresar un ID",
+      };
     }
-    const result = this.cars.find((Car)=>Car.id===id)
 
-    if (!result){
+
+    const car = await this.carRepository.findOneBy({ id });
+
+    if (!car){
       return {
         ok: false,
         message: "ID no encontrado"
@@ -54,13 +56,13 @@ export class CarService {
     }
     return {
       ok:true,
-      car: result
+      car,
     };
   }
   
 
 
-  update(id: number, updateCarDto: UpdateCarDto) {
+  async update(id: string, updateCarDto: UpdateCarDto) {
     const { name: newName } = updateCarDto;
 
     if (!newName) {
@@ -70,22 +72,27 @@ export class CarService {
       }
     }
 
-    const {ok, car } = this.findOne(id)
+    const result = await this.findOne(id);
 
-    if (!ok){
+    if (!result.ok){
       return {
+        ok: false,
         message: "Car not found"
       }
     }
 
-    if (car.name.toLowerCase() === newName.toLowerCase()) {
+    const existingCar = result.car as Car;
+
+    if (existingCar.name.toLowerCase() === newName.toLowerCase()) {
       return {
         message: 'No se registran cambios'
       }
     }
+    //actualizar la propiedad y guardarla
 
-
-  const updatedCar = this.cars[id-1].name = newName
+  existingCar.name = newName;
+  const updatedCar = await this.carRepository.save(existingCar)
+  
   
   console.log({updatedCar});
 
@@ -96,24 +103,22 @@ export class CarService {
   };
 
 }
-  remove(id: number) {
+  async remove(id: string) {
 
-    const {ok, car } = this.findOne(id);
+    const result = await this.findOne(id);
 
-    if (!ok){
+    if (!result.ok){
       return {
         ok:false,
         message: "Car not found"
       };
     }
 
-    const index = this.cars.findIndex((c) => c.id === id);
-
-    this.cars.splice(index, 1);
+    const index = this.carRepository.delete(id);
 
     return {
       ok:true,
-      message: 'Car with id ${id} deleted '
+      message: `Car with id #${id} deleted`,
     };
 
   }
