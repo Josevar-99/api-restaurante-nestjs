@@ -7,5 +7,5 @@ export const filterTableSchema = z.object({
     capacity: z.coerce.number().int().positive().optional(),
 });
 
-export type filterTableDto = z.infer<typeof filterTableSchema>;
+export type FilterTablesDto = z.infer<typeof filterTableSchema>;
 
