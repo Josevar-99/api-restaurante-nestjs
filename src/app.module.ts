@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { EnvConfig, envValidationSchema } from './config/index.js';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EnvConfig } from './config/env.config.js';
+import { envValidationSchema } from './config/env.validation.schema.js';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -20,26 +22,20 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (observeConfig: ConfigService) => ({
-        ...observeConfig.getOrThrow('observe'),
-      }),
+        ...observeConfig.getOrThrow('observe')
+      })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (c: ConfigService) => ({
-        type: 'postgres' as const,
-        host: c.getOrThrow<string>('database.host'),
-        port: c.getOrThrow<number>('database.port'),
-        username: c.getOrThrow<string>('database.username'),
-        password: c.getOrThrow<string>('database.password'),
-        database: c.getOrThrow<string>('database.name'),
-        autoLoadEntities: true,
-        synchronize: true, 
-      }),
+      useFactory: (typeConfig: ConfigService) => ({
+        ...typeConfig.get('database')
+      })
     }),
+    HealthModule,
     TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
