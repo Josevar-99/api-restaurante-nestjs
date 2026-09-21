@@ -7,5 +7,5 @@ export class TableEntity {
     @Column({ type: 'int', unique: true }) tableNumber: number;
     @Column({ type: 'int' }) capacity: number;
     @Column({ type: 'varchar', length: 20 }) zone: TableZone;
-    @Column({ type: 'varchar', length: 20, default: 'AVALIABLE' }) status: TableStatus;
+    @Column({ type: 'varchar', length: 20, default: 'AVAILABLE' }) status: TableStatus;
 }

@@ -13,7 +13,7 @@ export class TablesService {
 
     async create(dto: CreateTableDto) {
         await this.assertNumberFree(dto.tableNumber);
-        return this.repo.save(this.repo.create({ ...dto, status: 'AVALIABLE' }));
+        return this.repo.save(this.repo.create({ ...dto, status: 'AVAILABLE' }));
     }
 
     findAll(f: FilterTablesDto = {}) {

@@ -1,47 +1,45 @@
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvConfig, envValidationSchema } from './config/index.js';
+import { TablesModule } from './modules/tables.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
     ConfigModule.forRoot({
       isGlobal: true,
       load: [EnvConfig],
-      validationSchema: envValidationSchema
+      validationSchema: envValidationSchema,
     }),
     ObserveModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (observeConfig: ConfigService) => ({
-        ...observeConfig.getOrThrow('observe')
-      })
-
+        ...observeConfig.getOrThrow('observe'),
+      }),
     }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (c: ConfigService) => ({
+        type: 'postgres' as const,
+        host: c.getOrThrow<string>('database.host'),
+        port: c.getOrThrow<number>('database.port'),
+        username: c.getOrThrow<string>('database.username'),
+        password: c.getOrThrow<string>('database.password'),
+        database: c.getOrThrow<string>('database.name'),
+        autoLoadEntities: true,
+        synchronize: true, 
+      }),
+    }),
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
-// @Module({
-//   imports:[
-//     TypeOrmModule.forRoot({
-//       type:'postgres',
-//       host:'localhost',
-//       port:5432,
-//       username:'postgres',
-//       password:'admin123',
-//       database: 'Restaurant',
-//       entities:[]//dentro de este espacio se coloca el nombre de la entidad a crear,
-//       synchronize:true,
-//     }),
-//     //aqui se coloca el nombre del modulo traido 
-//   ]
-// })
-export class AppModule { }
+export class AppModule {}
