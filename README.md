@@ -1,204 +1,71 @@
-# Initial Setup Nest
+# Restaurant API
 
-Proyecto base para iniciar una API con NestJS, TypeScript, configuración global, Swagger y observabilidad con Nest Observe.
+Backend para gestión de reservas, pedidos y operación de un restaurante.
 
-## Descripción
+Autor: Jose Vargas
 
-Este repositorio es una plantilla minimalista para crear aplicaciones backend con NestJS. Ya viene preparada con:
+## Stack
 
-- Estructura base en módulos
-- Configuración de variables de entorno
-- Documentación Swagger
-- Integración con observabilidad de Nest
-- Pruebas unitarias y e2e
-- Soporte para PostgreSQL con TypeORM (comentado y listo para activar)
-
-## Tecnologías
-
-- Node.js
+- Node.js + TypeScript
 - NestJS 12
-- TypeScript
-- Swagger
 - PostgreSQL + TypeORM
-- Vitest
-- Zod
-- ESLint con Oxlint
+- Docker / Docker Compose
+- Swagger (OpenAPI)
 
 ## Requisitos previos
 
-Antes de iniciar, asegúrate de tener instalado:
-
-- Node.js 20 o superior
-- npm
-- PostgreSQL (si vas a activar TypeORM)
+- Node.js 20+
+- Docker y Docker Compose
 
 ## Instalación
 
-```bash
+\`\`\`bash
+git clone <url-del-repo>
+cd restaurant-api
 npm install
-```
+cp .env.example .env
+\`\`\`
 
-## Variables de entorno
+Ajusta los valores de `.env` según tu entorno.
 
-La app ya incluye configuración global de entorno con `@nestjs/config`. Puedes crear un archivo `.env` en la raíz del proyecto para definir tus variables locales.
+## Levantar el proyecto
 
-Ejemplo:
+\`\`\`bash
+docker compose up -d --build
+\`\`\`
 
-```env
-PORT=3000
-```
+La API queda disponible en `http://localhost:3000/api/v1`.
 
-> Actualmente la validación de variables está vacía en `src/config/env.validation.schema.ts`, por lo que puedes extenderla según tus necesidades.
+## Documentación de la API
 
-## Ejecutar la aplicación
+Swagger disponible en `http://localhost:3000/api/docs`.
 
-### Modo desarrollo
+## Health check
 
-```bash
-npm run start
-```
+\`\`\`bash
+curl http://localhost:3000/api/v1/health
+\`\`\`
 
-### Modo watch
+## Desarrollo local (sin Docker para la API)
 
-```bash
+\`\`\`bash
+docker compose up -d postgres
 npm run start:dev
-```
-
-### Modo debug
-
-```bash
-npm run start:debug
-```
-
-### Producción
-
-```bash
-npm run build
-npm run start:prod
-```
-
-La aplicación corre por defecto en:
-
-```text
-http://localhost:3000
-```
-
-## Documentación API
-
-Swagger está configurado para exponerse en:
-
-```text
-http://localhost:3000/api/docs
-```
-
-## Estructura del proyecto
-
-```text
-src/
-├── app.controller.ts
-├── app.module.ts
-├── app.service.ts
-├── main.ts
-├── config/
-│   ├── env.config.ts
-│   ├── env.validation.schema.ts
-│   ├── index.ts
-│   └── swagger.config.ts
-
-test/
-├── app.e2e-spec.ts
-```
+\`\`\`
 
 ## Scripts disponibles
 
-```bash
-npm run build
-npm run deploy
-npm run format
-npm run start
-npm run start:dev
-npm run start:debug
-npm run start:prod
-npm run lint
-npm run test
-npm run test:watch
-npm run test:cov
-npm run test:debug
-npm run test:e2e
-```
+- `npm run start:dev` — modo desarrollo con recarga automática
+- `npm run build` — compila el proyecto
+- `npm run lint` — corre oxlint
+- `npm run test` — corre pruebas con Vitest
+- `npm run format` — formatea con Prettier
 
-## Pruebas
+## Estructura del proyecto
 
-### Ejecutar pruebas unitarias
-
-```bash
-npm run test
-```
-
-### Ejecutar pruebas e2e
-
-```bash
-npm run test:e2e
-```
-
-### Cobertura
-
-```bash
-npm run test:cov
-```
-
-## Observabilidad
-
-El proyecto ya integra Nest Observe a través de `createObserveModule()`, lo cual permite añadir trazas, métricas y telemetría sin necesidad de una configuración compleja.
-
-## Base de datos
-
-En `src/app.module.ts` existe un bloque comentado para configurar TypeORM con PostgreSQL. Puedes descomentarlo y completar los datos de conexión según tu entorno.
-
-Ejemplo de configuración base:
-
-```ts
-TypeOrmModule.forRoot({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'admin123',
-  database: 'Restaurant',
-  entities: [],
-  synchronize: true,
-})
-```
-
-## Endpoint base
-
-La app incluye un controlador inicial que responde con:
-
-```http
-GET /
-```
-
-Respuesta:
-
-```text
-Hello World!
-```
-
-## Personalización recomendada
-
-Antes de continuar con el desarrollo, se recomienda:
-
-1. Definir un nombre real del proyecto en `package.json`
-2. Completar la validación de variables de entorno
-3. Configurar la base de datos real
-4. Crear módulos específicos por dominio
-5. Agregar autenticación y validaciones de entrada
-6. Definir una estructura de DTOs y entidades
-
-## Licencia
-
-Este proyecto está bajo la licencia del autor original de la plantilla. Si necesitas cambiarla, puedes editar el campo `license` en el archivo `package.json`.
-
-## Nota
-
-Este proyecto funciona como una base inicial para levantar una API NestJS con buenas prácticas de arranque y configuración, lista para evolucionar según tus necesidades.
+\`\`\`
+src/
+├── config/          # Configuración y validación de variables de entorno
+├── modules/         # Módulos de dominio (health, reservas, pedidos, etc.)
+└── main.ts
+\`\`\`
