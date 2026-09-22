@@ -10,7 +10,7 @@ export class CreateCategoryDto {
     @IsString()
     @IsNotEmpty()
     @MinLength(4, {message: 'Ingrese como minimo 4 caracteres'})
-    @MaxLength(100, {message: 'Solo puedes incluilr 100 caracteres'})
+    @MaxLength(100, {message: 'you can incluide only 100 characters'})
     name: string;
 
       /**
