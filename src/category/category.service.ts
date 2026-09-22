@@ -17,8 +17,8 @@ export class CategoryService {
 
   @Post()
   @ApiOperation({ summary: 'Create a new category', description: 'Creates a category record in the database.' })
-  @ApiResponse({ status: 201, description: 'The category has been created successfully.' })
-  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @ApiResponse({ status: 201, description: 'The category has been created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
   async create(createCategoryDto: CreateCategoryDto) {
     if (!createCategoryDto || !createCategoryDto.name) {
       return {
