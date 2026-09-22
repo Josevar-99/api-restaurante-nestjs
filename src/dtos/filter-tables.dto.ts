@@ -1,11 +1,19 @@
-import * as z from 'zod';
-import { TABLE_STATUSES, TABLE_ZONES } from '../constants/table.constants.js';
+import { IsIn, IsInt, IsOptional, IsPositive } from 'class-validator';
+import { Type } from 'class-transformer';
+import { TABLE_STATUSES, TABLE_ZONES, type TableStatus, type TableZone } from '../constants/table.constants.js';
 
-export const filterTablesSchema = z.object({
-    status: z.enum(TABLE_STATUSES).optional(),
-    zone: z.enum(TABLE_ZONES).optional(),
-    capacity: z.coerce.number().int().positive().optional(),
-});
+export class FilterTablesDto {
+    @IsOptional()
+    @IsIn(TABLE_STATUSES)
+    status?: TableStatus;
 
-export type FilterTablesDto = z.infer<typeof filterTablesSchema>;
+    @IsOptional()
+    @IsIn(TABLE_ZONES)
+    zone?: TableZone;
 
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @IsPositive()
+    capacity?: number;
+}

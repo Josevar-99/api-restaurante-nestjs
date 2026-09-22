@@ -1,6 +1,7 @@
-// src/dtos/update-table-status.dto.ts
-import * as z from 'zod';
-import { TABLE_STATUSES } from '../constants/table.constants.js';
+import { IsIn } from 'class-validator';
+import { TABLE_STATUSES, type TableStatus } from '../constants/table.constants.js';
 
-export const updateTableStatusSchema = z.object({ status: z.enum(TABLE_STATUSES) });
-export type UpdateTableStatusDto = z.infer<typeof updateTableStatusSchema>;
+export class UpdateTableStatusDto {
+    @IsIn(TABLE_STATUSES, { message: `El estado debe ser uno de: ${TABLE_STATUSES.join(', ')}` })
+    status: TableStatus;
+}

@@ -1,11 +1,15 @@
-import * as z from 'zod';
-import { TABLE_ZONES } from '../constants/table.constants.js';
+import { IsInt, IsPositive, IsIn } from 'class-validator';
+import { TABLE_ZONES, type TableZone } from '../constants/table.constants.js';
 
-export const createTableSchema = z.object({
-    tableNumber: z.number().int().positive('El número debe ser positivo'),
-    capacity: z.number().int().positive('La capacidad debe ser mayor a 0'),
-    zone: z.enum(TABLE_ZONES),
-});
+export class CreateTableDto {
+    @IsInt({ message: 'El número de mesa debe ser un entero' })
+    @IsPositive({ message: 'El número de mesa debe ser positivo' })
+    tableNumber: number;
 
-export type CreateTableDto = z.infer<typeof createTableSchema>;
+    @IsInt({ message: 'La capacidad debe ser un entero' })
+    @IsPositive({ message: 'La capacidad debe ser mayor a 0' })
+    capacity: number;
 
+    @IsIn(TABLE_ZONES, { message: `La zona debe ser una de: ${TABLE_ZONES.join(', ')}` })
+    zone: TableZone;
+}
