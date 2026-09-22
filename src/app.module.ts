@@ -3,12 +3,11 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { HealthModule } from './health/health.module.js';
-import { BrandModule } from './brand/brand.module.js';
-import { CarModule } from './car/car.module.js';
 import { CategoryModule } from './category/category.module.js';
 import { EnvConfig } from './config/env.config.js';
 import { envValidationSchema } from './config/env.schema.validations.js';
+import { ReservationsModule } from './reservations/reservations.module.js';
+import { ReservationsModule } from './reservations/reservations.module.js';
 
 @Module({
   imports: [
@@ -21,13 +20,11 @@ import { envValidationSchema } from './config/env.schema.validations.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        ...typeConfig.get('database')
+        ...configService.get('database')
         }),
     }),
-    HealthModule,
-    BrandModule,
-    CarModule,
     CategoryModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

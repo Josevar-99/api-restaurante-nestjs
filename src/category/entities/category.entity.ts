@@ -1,14 +1,16 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity('Categories')
 export class Category {
     @PrimaryGeneratedColumn('uuid')
+    @ApiProperty({description: 'Unique category ID '})
     id: string;
 
-    @Column()
+    @Column( {unique: true})
     name: string;
     
-    @Column()
+    @Column({ default: true})
     state: boolean
     
 }
