@@ -3,27 +3,25 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
     /**
-     * Nombre de la catgoria
+     * Category name
      * @example fastfood
      */
-    @ApiProperty({ example: 'FAST FOOD', description:'fastfood'})
+    @ApiProperty({ example: 'FAST FOOD', description: 'fastfood' })
     @IsString()
     @IsNotEmpty()
-    @MinLength(4, {message: 'Ingrese como minimo 4 caracteres'})
-    @MaxLength(100, {message: 'you can incluide only 100 characters'})
+    @MinLength(4, { message: 'Please enter at least 4 characters' })
+    @MaxLength(100, { message: 'You can include up to 100 characters only' })
     name: string;
 
-      /**
-   * Fecha y hora en la que se generó la respuesta.
-   *
-   * @type {string}
-   */
-    @ApiProperty({ 
-    default: true, 
-    required: false, 
-    description: 'Estado de la categoría'})
+    /**
+     * Category state
+     */
+    @ApiProperty({
+      default: true,
+      required: false,
+      description: 'category state',
+    })
     @IsBoolean()
     @IsOptional()
     state?: boolean;
-
 }

@@ -7,111 +7,101 @@
   import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus } from '@nestjs/common';
   import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
   @Injectable()
-  @ApiTags('Category') // Agrupa los endpoints bajo esta sección en Swagger
-  @Controller('category')
+@ApiTags('Category')
+@Controller('category')
+export class CategoryService {
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
 
-  export class CategoryService {
+  @Post()
+  @ApiOperation({ summary: 'Create a new category', description: 'Creates a category record in the database.' })
+  @ApiResponse({ status: 201, description: 'The category has been created successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  async create(createCategoryDto: CreateCategoryDto) {
+    if (!createCategoryDto || !createCategoryDto.name) {
+      return {
+        message: 'Error: category name is missing',
+      };
+    }
 
-    constructor (
-      @InjectRepository(Category)
-    private readonly categoryRepository: Repository <Category>
-    ) {}
+    const existingCategory = await this.categoryRepository.findOne({
+      where: { name: createCategoryDto.name },
+    });
 
+    if (existingCategory) {
+      throw new ConflictException('A category with this name already exists');
+    }
 
-    @Post()
-    @ApiOperation({ summary: 'Crear una nueva categoría', description: 'Crea un registro de categoría en la base de datos.' })
-    @ApiResponse({ status: 201, description: 'La categoría ha sido creada exitosamente.' })
-    @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-    async create(createCategoryDto: CreateCategoryDto) {
-        if (!createCategoryDto) {
-          return {
-            message: 'Error falta el nombre d ela categoria'
-          };
-        }
-    
-        const temporalCategory = this.categoryRepository.create(createCategoryDto);
-        const newCategory = await this.categoryRepository.save(temporalCategory);
+    const temporalCategory = this.categoryRepository.create(createCategoryDto);
+    const newCategory = await this.categoryRepository.save(temporalCategory);
 
-        const existingCategory = await this.categoryRepository.findOne({
-          where: {name: CreateCategoryDto.name}
-        });
-        if (existingCategory){
-          throw new ConflictException(
-            'Ya existe una tabla con ese nombre'
-          );
-        }
-        
-        return {
-          message: 'Category has been created',
-          Category: newCategory
-        }
-        
-    
-      }
-    
-      async findAll() {
-        return await this.categoryRepository.find();
-      }
-    
-      async findOne(id: string) {
-        if (!id){
-          return {
-            ok:false,
-            message: "Debe ingresar un ID"
-          }
-        }
-        const category = await this.categoryRepository.findOneBy({ id });
-    
-        if (!category){
-          return {
-            ok: false,
-            message: "Debe ingresar un ID"
-          };
-        }
-        
+    return {
+      message: 'Category has been created',
+      category: newCategory,
+    };
+  }
 
+  async findAll() {
+    return await this.categoryRepository.find();
+  }
 
-        return {
-          ok:true,
-          category,
-        };
-      }
-      
-    
-    
+  async findOne(id: string) {
+    if (!id) {
+      return {
+        ok: false,
+        message: 'Please provide an ID',
+      };
+    }
+
+    const category = await this.categoryRepository.findOneBy({ id });
+
+    if (!category) {
+      return {
+        ok: false,
+        message: 'Category not found',
+      };
+    }
+
+    return {
+      ok: true,
+      category,
+    };
+  }
+
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     const { name: newName } = updateCategoryDto;
 
     if (!newName) {
       return {
         ok: false,
-        message: 'Enter a new category name'
+        message: 'Please provide a new category name',
       };
     }
 
     const result = await this.findOne(id);
 
-    
     if (!result.ok || !result.category) {
       return {
         ok: false,
-        message: "Category not found"
+        message: 'Category not found',
       };
     }
-    
+
     const existingCategory = result.category;
 
     if (!existingCategory) {
       return {
         ok: false,
-        message: "Category not found in database"
+        message: 'Category not found in the database',
       };
     }
 
     if (existingCategory.name.toLowerCase() === newName.toLowerCase()) {
       return {
         ok: true,
-        message: 'No se registran cambios'
+        message: 'No changes were registered',
       };
     }
 
@@ -122,28 +112,26 @@
     return {
       ok: true,
       message: 'Category updated',
-      category: updatedCategory
+      category: updatedCategory,
     };
   }
 
-      async remove(id: string) {
-    
-      const result = await this.findOne(id);
-    
-      if (!result.ok || !result.category) {
+  async remove(id: string) {
+    const result = await this.findOne(id);
+
+    if (!result.ok || !result.category) {
       return {
         ok: false,
-        message: "Category not found"
+        message: 'Category not found',
       };
-      }
-    
-        await this.categoryRepository.delete(id);
-    
-        return {
-          ok:true,
-          message: 'Category has been deleted '
-        };
-    
-      }
     }
+
+    await this.categoryRepository.delete(id);
+
+    return {
+      ok: true,
+      message: 'Category has been deleted',
+    };
+  }
+}
     
