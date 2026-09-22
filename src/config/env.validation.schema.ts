@@ -2,13 +2,13 @@ import * as z from 'zod';
 
 export const envValidationSchema = z.object({
 
-    APP_NODE: z.enum(['development', 'production']),
+    NODE_ENV: z.enum(['development', 'production']).default('development'),
 
     POSTGRES_PORT: z.string().default('5432'),
     POSTGRES_HOST: z.string().default('postgres'),
-    POSTGRES_USER: z.string(),
-    POSTGRES_PASSWORD: z.string(),
-    POSTGRES_DB: z.string(),
+    POSTGRES_USER: z.string().default('restaurant_user'),
+    POSTGRES_PASSWORD: z.string().default('changeme'),
+    POSTGRES_DB: z.string().default('restaurant_db'),
 
-    CORS_ORIGINS:z.string()
+    CORS_ORIGINS: z.string().default('http://localhost:3000'),
 })

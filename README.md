@@ -1,71 +1,59 @@
-# Restaurant API
+# Restaurant Categories API
 
-Backend para gestión de reservas, pedidos y operación de un restaurante.
+REST API built with NestJS and PostgreSQL to manage restaurant menu categories.
 
-Autor: Jose Vargas
+## Requirements
 
-## Stack
+- Node.js 20 or later
+- PostgreSQL 14 or later
+- Docker Desktop and Docker Compose
 
-- Node.js + TypeScript
-- NestJS 12
-- PostgreSQL + TypeORM
-- Docker / Docker Compose
-- Swagger (OpenAPI)
+## Installation
 
-## Requisitos previos
-
-- Node.js 20+
-- Docker y Docker Compose
-
-## Instalación
-
-\`\`\`bash
-git clone <url-del-repo>
-cd restaurant-api
+```bash
 npm install
-cp .env.example .env
-\`\`\`
+copy .env.example .env
+docker compose up -d
+```
 
-Ajusta los valores de `.env` según tu entorno.
+The API uses the global prefix `/api/v1`. The local PostgreSQL service creates the restaurant database automatically.
 
-## Levantar el proyecto
+## Running the Application
 
-\`\`\`bash
-docker compose up -d --build
-\`\`\`
-
-La API queda disponible en `http://localhost:3000/api/v1`.
-
-## Documentación de la API
-
-Swagger disponible en `http://localhost:3000/api/docs`.
-
-## Health check
-
-\`\`\`bash
-curl http://localhost:3000/api/v1/health
-\`\`\`
-
-## Desarrollo local (sin Docker para la API)
-
-\`\`\`bash
-docker compose up -d postgres
+```bash
 npm run start:dev
-\`\`\`
+```
 
-## Scripts disponibles
+The API is available at `http://localhost:3000`, and Swagger is available at `http://localhost:3000/api/docs`.
 
-- `npm run start:dev` — modo desarrollo con recarga automática
-- `npm run build` — compila el proyecto
-- `npm run lint` — corre oxlint
-- `npm run test` — corre pruebas con Vitest
-- `npm run format` — formatea con Prettier
+## Category Rules
 
-## Estructura del proyecto
+- Category names are required and unique.
+- Names must contain between 4 and 100 characters.
+- Descriptions are required and may contain up to 500 characters.
+- New categories always start with status `ACTIVE`.
+- Only `ACTIVE` categories are returned by `/api/v1/categories/available` for the customer menu.
+- The only valid statuses are `ACTIVE` and `INACTIVE`.
 
-\`\`\`
-src/
-├── config/          # Configuración y validación de variables de entorno
-├── modules/         # Módulos de dominio (health, reservas, pedidos, etc.)
-└── main.ts
-\`\`\`
+## Endpoints
+
+| Method | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/v1/categories` | Create a category |
+| `GET` | `/api/v1/categories` | List all categories for administrators |
+| `GET` | `/api/v1/categories/available` | List active categories for customers |
+| `GET` | `/api/v1/categories/:id` | Get a category |
+| `PATCH` | `/api/v1/categories/:id` | Update name or description |
+| `PATCH` | `/api/v1/categories/:id/status` | Activate or deactivate a category |
+
+Example category names: `Appetizers`, `Main Courses`, `Beverages`, `Desserts`, `Burgers`, and `Salads`.
+
+## Verification
+
+```bash
+npm run build
+npm run lint
+npm test
+```
+
+See the module documentation in [src/category/README.md](src/category/README.md).
