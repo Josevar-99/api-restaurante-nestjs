@@ -1,35 +1,35 @@
 # 🚀 NestJS Category CRUD API
 
-API RESTful profesional desarrollada con **NestJS**, **TypeORM** y **PostgreSQL**, diseñada para la gestión de categorías con validaciones avanzadas, control de duplicados y documentación interactiva mediante **Swagger**.
+Professional RESTful API built with **NestJS**, **TypeORM**, and **PostgreSQL**, designed for category management with advanced validation, duplicate prevention, and interactive documentation through **Swagger**.
 
 ---
 
-## 🛠️ Tecnologías y Herramientas
+## 🛠️ Technologies and Tools
 
-* **[NestJS](https://nestjs.com/)** - Framework progresivo de Node.js para arquitecturas escalables.
-* **[TypeScript](https://www.typescriptlang.org/)** - Superset tipado de JavaScript.
-* **[TypeORM](https://typeorm.io/)** - ORM robusto para TypeScript y bases de datos relacionales.
-* **[PostgreSQL](https://www.postgresql.org/)** - Base de datos relacional potente y segura.
-* **[Swagger (@nestjs/swagger)](https://docs.nestjs.com/openapi/introduction)** - Interfaz gráfica para la documentación de la API.
-* **[Class-Validator](https://github.com/typestack/class-validator)** - Validación basada en decoradores para los DTOs.
-
----
-
-## 📋 Características Principales
-
-* 🔒 **Validación de Duplicados:** Evita registrar categorías con nombres repetidos arrojando un error `409 Conflict`.
-* 🛡️ **Validación de Datos:** Reglas estrictas en los DTOs (longitudes mínimas y máximas, tipos de datos correctos).
-* 📑 **Documentación Interactiva:** Swagger integrado en la ruta `/docs` con esquemas y descripciones detalladas.
-* 🗄️ **Identificadores Únicos (UUID):** Uso de UUIDs en las entidades para mayor seguridad en las rutas.
+* **[NestJS](https://nestjs.com/)** - Progressive Node.js framework for scalable architectures.
+* **[TypeScript](https://www.typescriptlang.org/)** - Typed superset of JavaScript.
+* **[TypeORM](https://typeorm.io/)** - Robust ORM for TypeScript and relational databases.
+* **[PostgreSQL](https://www.postgresql.org/)** - Powerful and secure relational database.
+* **[Swagger (@nestjs/swagger)](https://docs.nestjs.com/openapi/introduction)** - Graphical interface for API documentation.
+* **[Class-Validator](https://github.com/typestack/class-validator)** - Decorator-based validation for DTOs.
 
 ---
 
-## ⚙️ Requisitos Previos
+## 📋 Main Features
 
-Asegúrate de tener instalado en tu equipo:
-* **Node.js** (versión 18 o superior recomendada)
-* **npm** o **yarn**
-* **PostgreSQL** (corriendo de manera local o en contenedor)
+* 🔒 **Duplicate Validation:** Prevents registering categories with repeated names by throwing a `409 Conflict` error.
+* 🛡️ **Data Validation:** Strict rules in DTOs (minimum and maximum lengths, correct data types).
+* 📑 **Interactive Documentation:** Swagger integrated at the `/docs` route with detailed schemas and descriptions.
+* 🗄️ **Unique Identifiers (UUID):** Use of UUIDs in entities for better route security.
+
+---
+
+## ⚙️ Requirements
+
+Make sure you have the following installed:
+* **Node.js** (version 18 or higher recommended)
+* **npm** or **yarn**
+* **PostgreSQL** (running locally or in a container)
 
 ---
 
