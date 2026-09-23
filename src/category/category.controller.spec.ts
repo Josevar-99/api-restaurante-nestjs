@@ -22,7 +22,7 @@ describe('CategoryController', () => {
     controller = module.get<CategoryController>(CategoryController);
   });
 
-  it('should be defined', () => {
+  it('should be defined ', () => {
     expect(controller).toBeDefined();
   });
 });
