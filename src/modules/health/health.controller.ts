@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { HealthService } from './health.service.js';
 import { HealthResponseDto } from './dto/health.response.dto.js';
-import { ApiOperation , ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('health')
 export class HealthController {
