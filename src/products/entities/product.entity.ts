@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
-import { Category } from '../../categories/entities/category.entity.js';
+import { Category } from '../../category/entities/category.entity.js';
 
 export enum ProductStatus {
     ACTIVE = 'ACTIVE',

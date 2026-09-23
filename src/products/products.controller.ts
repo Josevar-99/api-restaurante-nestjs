@@ -5,7 +5,7 @@ import { UpdateProductDto } from './dto/update-product.dto.js';
 import { UpdateStatusDto } from './dto/update-status.dto.js';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto.js';
 
-@Controller('api/v1/products')
+@Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

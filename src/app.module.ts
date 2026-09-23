@@ -3,35 +3,44 @@ import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductsModule } from './products/products.module.js';
-import { Product } from './products/entities/product.entity.js';
+import { EnvConfig } from './config/env.config.js';
+import { envValidationSchema } from './config/env.validation.schema.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CategoryModule } from './categories/category.module.js';
-import { Category } from './categories/entities/category.entity.js';
+import { CategoryModule } from './category/category.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { TablesModule } from './modules/tables.module.js';
+import { ProductsModule } from './products/products.module.js'; // NUEVO (HU-004)
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [EnvConfig],
+      validationSchema: envValidationSchema,
+    }),
+    ObserveModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (observeConfig: ConfigService) => ({
+        ...observeConfig.getOrThrow('observe'),
+      }),
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: config.get('DB_PORT'),
-        username: config.get('DB_USER'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
-        entities: [Product,Category],
-        synchronize: true,
+      useFactory: (configService: ConfigService) => ({
+        ...configService.getOrThrow('database'),
+        autoLoadEntities: true,
       }),
     }),
-    ProductsModule,
     CategoryModule,
+    ProductsModule, 
+    HealthModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

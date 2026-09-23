@@ -1,17 +1,42 @@
-# docker-compose.yml
 services:
-  db:
-    image: postgres:16
-    container_name: menu-restaurante-db
+  postgres:
+    image: postgres:16-alpine
+    container_name: restaurant_db_nest
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: menu_restaurante
+
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - restaurant_db_nest_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  restaurant-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: restaurant_api_nest
+    restart: unless-stopped
+
+    ports:
+      - "${PORT}:${PORT}"
+
+    env_file:
+      - .env
+
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
-  db_data:
+  restaurant_db_nest_postgres_data:

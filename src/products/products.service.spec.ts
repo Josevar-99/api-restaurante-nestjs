@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProductsService } from './products.service.js';
 import { Product, ProductStatus, ProductAvailability } from './entities/product.entity.js';
-import { Category } from '../categories/entities/category.entity.js';
+import { Category } from '../category/entities/category.entity.js';
 
 describe('ProductsService', () => {
   let service: ProductsService;
