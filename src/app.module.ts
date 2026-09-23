@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,27 +9,38 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
+
+export const { ObserveModule, ObserveInstrument } = createObserveModule();
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [EnvConfig],
-      validate: (config) => envValidationSchema.parse(config),
+  
+      validationSchema: envValidationSchema,
+    }),
+    ObserveModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (observeConfig: ConfigService) => ({
+        ...observeConfig.getOrThrow('observe')
+      })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
+        
         ...configService.getOrThrow('database'),
         autoLoadEntities: true,
       }),
     }),
     CategoryModule,
     HealthModule,
+  
   ],
-
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {}
