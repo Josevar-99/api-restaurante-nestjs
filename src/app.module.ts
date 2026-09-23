@@ -8,6 +8,7 @@ import { envValidationSchema } from './config/env.validation.schema.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { TablesModule } from './modules/tables.module.js';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -37,8 +38,10 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       }),
     }),
     CategoryModule,
-    HealthModule,
+    
   
+    HealthModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
