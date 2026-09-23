@@ -1,32 +1,52 @@
-# Categories Module
+# Category Module
 
-The `category` module manages restaurant menu categories.
+The `category` module manages the restaurant menu categories used to organize dishes and products by type.
 
-## Category Data
+## Purpose
+
+This module allows administrators to:
+
+- create new categories
+- list all categories
+- list only active categories for the public menu
+- retrieve a single category by ID
+- update the name and description
+- activate or deactivate a category
+
+Categories are identified by a unique name and always start with the `ACTIVE` status.
+
+## Business rules
 
 | Field | Type | Rules |
 | --- | --- | --- |
-| `id` | UUID | Generated automatically |
-| `name` | string | Required, unique, between 4 and 100 characters |
-| `description` | string | Required, up to 500 characters |
+| `id` | UUID | Automatically generated |
+| `name` | string | Required, unique, trimmed before saving, 4-100 characters |
+| `description` | string | Required, text content |
 | `status` | enum | `ACTIVE` or `INACTIVE` |
 
-New categories always start with `ACTIVE` status. Inactive categories are excluded from the customer menu through `GET /api/v1/categories/available`.
+Important rules:
 
-Examples include `Appetizers`, `Main Courses`, `Beverages`, `Desserts`, `Burgers`, and `Salads`.
+- duplicate category names are rejected
+- names are trimmed before validation and persistence
+- active categories are returned by `GET /api/v1/categories/available`
+- inactive categories are hidden from the customer-facing menu
 
-## Endpoints
+Examples of valid categories include: `Appetizers`, `Main Courses`, `Beverages`, `Desserts`, `Burgers`, and `Salads`.
+
+## API endpoints
 
 | Method | Route | Description |
 | --- | --- | --- |
-| `POST` | `/api/v1/categories` | Create a category |
+| `POST` | `/api/v1/categories` | Create a new category |
 | `GET` | `/api/v1/categories` | List all categories for administrators |
-| `GET` | `/api/v1/categories/available` | List active categories for customers |
-| `GET` | `/api/v1/categories/:id` | Get one category |
-| `PATCH` | `/api/v1/categories/:id` | Update name or description |
+| `GET` | `/api/v1/categories/available` | List only active categories |
+| `GET` | `/api/v1/categories/:id` | Retrieve one category by ID |
+| `PATCH` | `/api/v1/categories/:id` | Update the name or description |
 | `PATCH` | `/api/v1/categories/:id/status` | Activate or deactivate a category |
 
-## Create Example
+## Request example
+
+### Create category
 
 ```json
 {
@@ -35,9 +55,7 @@ Examples include `Appetizers`, `Main Courses`, `Beverages`, `Desserts`, `Burgers
 }
 ```
 
-The response contains the new category with `status: "ACTIVE"`.
-
-## Status Example
+### Update status
 
 ```json
 {
@@ -45,4 +63,34 @@ The response contains the new category with `status: "ACTIVE"`.
 }
 ```
 
-Swagger documents the complete API contract at `/api/docs` while the application is running.
+## Response example
+
+```json
+{
+  "id": "3f2a7c1d-5b8e-4d0a-9c6f-123456789abc",
+  "name": "Main Courses",
+  "description": "Grilled and cooked dishes served as the main course.",
+  "status": "ACTIVE"
+}
+```
+
+## Unit tests
+
+The module includes unit tests for both the controller and the service:
+
+![alt text](<Captura desde 2026-09-23 13-48-24.png>)
+
+- `src/category/category.controller.spec.ts`
+- `src/category/category.service.spec.ts`
+
+These tests cover:
+
+- successful creation and lookup flows
+- duplicate-name validation
+- sorting and filtering behavior
+- category status updates
+- missing-resource handling
+
+![alt text](image.png)
+
+The complete API contract is also documented with Swagger at `/api/docs` while the application is running.
