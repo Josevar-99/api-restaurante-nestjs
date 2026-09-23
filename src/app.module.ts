@@ -6,8 +6,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvConfig } from './config/env.config.js';
 import { envValidationSchema } from './config/env.validation.schema.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables.module.js';
+
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -16,6 +18,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     ConfigModule.forRoot({
       isGlobal: true,
       load: [EnvConfig],
+  
       validationSchema: envValidationSchema,
     }),
     ObserveModule.forRootAsync({
@@ -28,14 +31,19 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (typeConfig: ConfigService) => ({
-        ...typeConfig.get('database')
-      })
+      useFactory: (configService: ConfigService) => ({
+        
+        ...configService.getOrThrow('database'),
+        autoLoadEntities: true,
+      }),
     }),
+    CategoryModule,
+    
+  
     HealthModule,
     TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
