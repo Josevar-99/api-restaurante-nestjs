@@ -6,22 +6,22 @@ import { CategoryStatus } from './enums/category-status.enum.js';
 describe('CategoryController', () => {
   let controller: CategoryController;
   let service: {
-    create: ReturnType<typeof vi.fn>;
-    findAll: ReturnType<typeof vi.fn>;
-    findAvailable: ReturnType<typeof vi.fn>;
-    findOne: ReturnType<typeof vi.fn>;
-    update: ReturnType<typeof vi.fn>;
-    updateStatus: ReturnType<typeof vi.fn>;
+    create: jest.Mock<any, any>;
+    findAll: jest.Mock<any, any>;
+    findAvailable: jest.Mock<any, any>;
+    findOne: jest.Mock<any, any>;
+    update: jest.Mock<any, any>;
+    updateStatus: jest.Mock<any, any>;
   };
 
   beforeEach(async () => {
     service = {
-      create: vi.fn(),
-      findAll: vi.fn(),
-      findAvailable: vi.fn(),
-      findOne: vi.fn(),
-      update: vi.fn(),
-      updateStatus: vi.fn(),
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findAvailable: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      updateStatus: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

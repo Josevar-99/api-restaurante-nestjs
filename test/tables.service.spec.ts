@@ -12,11 +12,11 @@ interface TableWhere {
 
 // Repositorio falso: pruebas unitarias sin base de datos
 const makeRepo = () => ({
-    create: vi.fn((d) => d),
-    save: vi.fn(async (d) => ({ id: 1, ...d })),
-    find: vi.fn(async (_options?: { where?: TableWhere }) => [] as TableEntity[]),
-    findOneBy: vi.fn(),
-    existsBy: vi.fn(async () => false),
+    create: jest.fn((d) => d),
+    save: jest.fn(async (d) => ({ id: 1, ...d })),
+    find: jest.fn(async (_options?: { where?: TableWhere }) => [] as TableEntity[]),
+    findOneBy: jest.fn(),
+    existsBy: jest.fn(async () => false),
 });
 
 describe('TablesService', () => {

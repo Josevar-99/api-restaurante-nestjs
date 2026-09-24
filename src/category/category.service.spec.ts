@@ -8,18 +8,18 @@ import { CategoryStatus } from './enums/category-status.enum.js';
 describe('CategoryService', () => {
   let service: CategoryService;
   let repository: {
-    findOneBy: ReturnType<typeof vi.fn>;
-    save: ReturnType<typeof vi.fn>;
-    create: ReturnType<typeof vi.fn>;
-    find: ReturnType<typeof vi.fn>;
+    findOneBy: jest.Mock<any, any>;
+    save: jest.Mock<any, any>;
+    create: jest.Mock<any, any>;
+    find: jest.Mock<any, any>;
   };
 
   beforeEach(async () => {
     repository = {
-      findOneBy: vi.fn(),
-      save: vi.fn(),
-      create: vi.fn(),
-      find: vi.fn(),
+      findOneBy: jest.fn(),
+      save: jest.fn(),
+      create: jest.fn(),
+      find: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
