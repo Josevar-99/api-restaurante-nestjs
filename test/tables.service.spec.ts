@@ -11,10 +11,10 @@ interface TableWhere {
 }
 
 const makeRepo = () => ({
-    create: jest.fn((d: Partial<TableEntity>) => d),
-    save: jest.fn(async (d: Partial<TableEntity>) => ({ id: 1, ...d })),
+    create: jest.fn((d) => d),
+    save: jest.fn(async (d) => ({ id: 1, ...d })),
     find: jest.fn(async (_options?: { where?: TableWhere }) => [] as TableEntity[]),
-    findOneBy: jest.fn<() => Promise<TableEntity | null>>(),
+    findOneBy: jest.fn(),
     existsBy: jest.fn(async () => false),
 });
 

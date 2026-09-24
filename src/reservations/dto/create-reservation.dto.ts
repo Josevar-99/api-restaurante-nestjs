@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Timestamp } from 'typeorm/driver/mongodb/bson.typings.js';
 
 export class CreateReservationDto {
@@ -15,18 +15,23 @@ export class CreateReservationDto {
     @MinLength(10, {message:'Enter a valid number of 10 characters'})
     @MaxLength(10, {message:'Enter a valid number of 10 characters'})
     @IsOptional()
-    Phone?: string;
+    phone?: string;
 
     @IsEmail()
     @IsString()
     @IsOptional()
-    email?: String;
+    email?: string;
 
     @IsDate()
-    date: Timestamp;
+    date: Date;
 
     @IsNumber()
     @IsNotEmpty()
     quantity: number;
+
+
+    @IsBoolean()
+    
+    state: boolean;
 
 }
