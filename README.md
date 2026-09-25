@@ -19,20 +19,20 @@ Autor: Jose Vargas
 
 ## Instalación
 
-\`\`\`bash
+```bash
 git clone <url-del-repo>
 cd restaurant-api
 npm install
 cp .env.example .env
-\`\`\`
+```
 
 Ajusta los valores de `.env` según tu entorno.
 
 ## Levantar el proyecto
 
-\`\`\`bash
+```bash
 docker compose up -d --build
-\`\`\`
+```
 
 La API queda disponible en `http://localhost:3000/api/v1`.
 
@@ -42,30 +42,32 @@ Swagger disponible en `http://localhost:3000/api/docs`.
 
 ## Health check
 
-\`\`\`bash
+```bash
 curl http://localhost:3000/api/v1/health
-\`\`\`
+```
 
 ## Desarrollo local (sin Docker para la API)
 
-\`\`\`bash
+```bash
 docker compose up -d postgres
 npm run start:dev
-\`\`\`
+```
 
 ## Scripts disponibles
 
 - `npm run start:dev` — modo desarrollo con recarga automática
 - `npm run build` — compila el proyecto
 - `npm run lint` — corre oxlint
-- `npm run test` — corre pruebas con Vitest
+- `npm run typecheck` — revisa tipos con `tsc --noEmit`
+- `npm run test` — corre pruebas con Jest
+- `npm run test:cov` — pruebas con cobertura
 - `npm run format` — formatea con Prettier
 
 ## Estructura del proyecto
 
-\`\`\`
+```
 src/
 ├── config/          # Configuración y validación de variables de entorno
 ├── modules/         # Módulos de dominio (health, reservas, pedidos, etc.)
 └── main.ts
-\`\`\`
+```
