@@ -9,7 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables.module.js';
-import { ProductsModule } from './products/products.module.js'; // NUEVO (HU-004)
+import { ReservationsModule } from './reservations/reservations.module.js';
+import { ProductsModule } from './products/products.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -36,7 +37,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       }),
     }),
     CategoryModule,
-    ProductsModule, 
+    ProductsModule,
+    ReservationsModule,
     HealthModule,
     TablesModule,
   ],
