@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
+import { AppModule, ObserveInstrument } from './app.module.js';
 import { swaggerConfiguration } from './config/swagger.config.js';
 import * as helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
@@ -7,11 +7,10 @@ import { ValidationPipe } from '@nestjs/common'
 
 
 
-
-
-
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    instrument: ObserveInstrument,
+  });
   
   app.use(helmet.default());
 
