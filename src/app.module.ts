@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables.module.js';
+import { ReservationsModule } from './reservations/reservations.module.js';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -38,10 +39,9 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       }),
     }),
     CategoryModule,
-    
-  
     HealthModule,
     TablesModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

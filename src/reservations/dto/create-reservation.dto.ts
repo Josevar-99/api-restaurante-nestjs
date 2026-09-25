@@ -1,37 +1,65 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { Timestamp } from 'typeorm/driver/mongodb/bson.typings.js';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsDate,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Matches,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateReservationDto {
+  @ApiProperty({ example: 'Juan Gomez', description: 'Customer name' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(4, { message: 'Enter a valid name' })
+  @MaxLength(100, { message: 'Name must be at most 100 characters' })
+  @Matches(/\S/, { message: 'Enter a valid name' })
+  name: string;
 
+  @ApiProperty({
+    example: '3001234567',
+    description: 'Colombian phone number',
+    required: false,
+  })
+  @IsPhoneNumber('CO')
+  @IsNotEmpty()
+  @IsOptional()
+  phone?: string;
 
-    @ApiProperty({example: 'Juan Gomez', description:'fastfood'})
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(4, {message:'Enter a valid name'})
-    name: string;
+  @ApiProperty({ example: 'a@a.com', required: false })
+  @IsEmail()
+  @IsString()
+  @IsOptional()
+  email?: string;
 
-    @IsNumber()
-    @MinLength(10, {message:'Enter a valid number of 10 characters'})
-    @MaxLength(10, {message:'Enter a valid number of 10 characters'})
-    @IsOptional()
-    phone?: string;
+  @ApiProperty({ example: '2026-09-25T19:00:00.000Z' })
+  @IsDate()
+  @Type(() => Date)
+  date: Date;
 
-    @IsEmail()
-    @IsString()
-    @IsOptional()
-    email?: string;
+  @ApiProperty({
+    example: '19:00',
+    description: 'Reservation time in HH:mm format',
+  })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'Time must be in HH:mm format',
+  })
+  time: string;
 
-    @IsDate()
-    date: Date;
-
-    @IsNumber()
-    @IsNotEmpty()
-    quantity: number;
-
-
-    @IsBoolean()
-    
-    state: boolean;
-
+  @ApiProperty({ example: 4, minimum: 1, description: 'Number of guests' })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  quantity: number;
 }

@@ -1,34 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ReservationsService } from './reservations.service.js';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
-import { UpdateReservationDto } from './dto/update-reservation.dto.js';
+import { ReservationsService } from './reservations.service.js';
 
 @Controller('reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a reservation' })
+  @ApiResponse({
+    status: 201,
+    description: 'Reservation created successfully.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'The date is already reserved or no table is available.',
+  })
   create(@Body() createReservationDto: CreateReservationDto) {
     return this.reservationsService.create(createReservationDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.reservationsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reservationsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReservationDto: UpdateReservationDto) {
-    return this.reservationsService.update(+id, updateReservationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reservationsService.remove(+id);
   }
 }

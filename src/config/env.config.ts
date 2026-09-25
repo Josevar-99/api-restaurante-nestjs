@@ -10,5 +10,16 @@
         synchronize: process.env.NODE_ENV === 'development',
     },
     corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? [],
-
+    observe: {
+        appKey: process.env.OBSERVE_APP_KEY ?? '',
+        appSecret: process.env.OBSERVE_APP_SECRET ?? '',
+        serviceId: process.env.OBSERVE_SERVICE_ID ?? 'api-restaurante',
+        serviceVersion: process.env.OBSERVE_SERVICE_VERSION ?? '1.0.0',
+        ...(process.env.OBSERVE_ENDPOINT
+            ? { endpoint: process.env.OBSERVE_ENDPOINT }
+            : {}),
+        forwardLogs: process.env.OBSERVE_FORWARD_LOGS === 'true',
+        runtimeMetrics: process.env.OBSERVE_RUNTIME_METRICS !== 'false',
+        debug: process.env.OBSERVE_DEBUG === 'true',
+    },
 })
