@@ -28,7 +28,7 @@ Important rules:
 
 - duplicate category names are rejected
 - names are trimmed before validation and persistence
-- active categories are returned by `GET /api/v1/categories/available`
+- active categories are returned by `GET /api/v1/category/available`
 - inactive categories are hidden from the customer-facing menu
 
 Examples of valid categories include: `Appetizers`, `Main Courses`, `Beverages`, `Desserts`, `Burgers`, and `Salads`.
@@ -39,10 +39,10 @@ Examples of valid categories include: `Appetizers`, `Main Courses`, `Beverages`,
 | --- | --- | --- |
 | `POST` | `/api/v1/categories` | Create a new category |
 | `GET` | `/api/v1/categories` | List all categories for administrators |
-| `GET` | `/api/v1/categories/available` | List only active categories |
-| `GET` | `/api/v1/categories/:id` | Retrieve one category by ID |
-| `PATCH` | `/api/v1/categories/:id` | Update the name or description |
-| `PATCH` | `/api/v1/categories/:id/status` | Activate or deactivate a category |
+| `GET` | `/api/v1/category/available` | List only active categories |
+| `GET` | `/api/v1/category/:id` | Retrieve one category by ID |
+| `PATCH` | `/api/v1/category/:id` | Update the name or description |
+| `PATCH` | `/api/v1/category/:id/status` | Activate or deactivate a category |
 
 ## Request example
 

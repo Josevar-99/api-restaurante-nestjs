@@ -9,7 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from './category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables.module.js';
-
+import { ReservationsModule } from './reservations/reservations.module.js';
+import { ProductsModule } from './products/products.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -18,28 +19,26 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     ConfigModule.forRoot({
       isGlobal: true,
       load: [EnvConfig],
-  
       validationSchema: envValidationSchema,
     }),
     ObserveModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (observeConfig: ConfigService) => ({
-        ...observeConfig.getOrThrow('observe')
-      })
+        ...observeConfig.getOrThrow('observe'),
+      }),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        
         ...configService.getOrThrow('database'),
         autoLoadEntities: true,
       }),
     }),
     CategoryModule,
-    
-  
+    ProductsModule,
+    ReservationsModule,
     HealthModule,
     TablesModule,
   ],

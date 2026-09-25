@@ -1,41 +1,30 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn } from "typeorm";
-import { ReservationStatus } from './../reservation-status.enum.js'
+import { ApiProperty } from '@nestjs/swagger';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-
-@Entity('Reservation')
+@Entity('reservations')
 export class Reservation {
-    @PrimaryGeneratedColumn('uuid')
-    @ApiProperty({format: 'uuid', 
-    description: 'Unique resevation ID',
-    example: '3f2a7c1d-5b8e-4d0a-9c6f-123456789abc'})
-    id:string;
-    
-    @ApiProperty({ example: 'Juan Balencia', minLength:4, maxLength:100,})
-    @Column({unique:false})
-    name: string;
-    
+  @ApiProperty({ description: 'Unique reservation ID', format: 'uuid' })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @ApiProperty({ example: '300000000', minLength:10, maxLength:10})
-    @Column({unique:true})
-    phone: string
+  @ApiProperty({ description: 'Customer name' })
+  @Column({ type: 'varchar', length: 150 })
+  name: string;
 
-    @Column({unique:true})
-    @ApiProperty({example: 'a@a.com', minLength:3, maxLength:100})
-    email: string
+  @ApiProperty({ description: 'Customer phone number' })
+  @Column({ type: 'varchar', length: 20 })
+  phone: string;
 
-    @CreateDateColumn({type: 'timestamp', nullable:false})
-    date: Date
-    
-    @ApiProperty({example: '2', minLength:1, maxLength:4})
-    @Column()
-    quantity: number
-    
+  @ApiProperty({ description: 'Customer email' })
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  email?: string;
 
-    @ApiProperty({example: 'active'})
-    @Column({ type: 'enum',
-    enum: ReservationStatus,
-    default: ReservationStatus.PENDING})
-    status: ReservationStatus
+  @ApiProperty({ description: 'Reservation date' })
+  @Column({ type: 'timestamptz' })
+  date: Date;
 
+  @ApiProperty({ description: 'Number of people' })
+  @Column({ type: 'int' })
+  quantity: number;
 }
+

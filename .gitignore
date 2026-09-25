@@ -3,13 +3,15 @@
 /node_modules
 /build
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # Logs
 logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 lerna-debug.log*
 
 # OS
@@ -54,4 +56,3 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-tsconfig.build.tsbuildinfo

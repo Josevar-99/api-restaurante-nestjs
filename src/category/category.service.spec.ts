@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -8,10 +9,10 @@ import { CategoryStatus } from './enums/category-status.enum.js';
 describe('CategoryService', () => {
   let service: CategoryService;
   let repository: {
-    findOneBy: jest.Mock<any, any>;
-    save: jest.Mock<any, any>;
-    create: jest.Mock<any, any>;
-    find: jest.Mock<any, any>;
+    findOneBy: jest.Mock;
+    save: jest.Mock;
+    create: jest.Mock;
+    find: jest.Mock;
   };
 
   beforeEach(async () => {
