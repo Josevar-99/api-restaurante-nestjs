@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
@@ -19,7 +23,9 @@ export class CategoryService {
     const existingCategory = await this.categoryRepository.findOneBy({ name });
 
     if (existingCategory) {
-      throw new ConflictException(`Category with name "${name}" already exists`);
+      throw new ConflictException(
+        `Category with name "${name}" already exists`,
+      );
     }
 
     const category = this.categoryRepository.create({
@@ -31,8 +37,13 @@ export class CategoryService {
     try {
       return await this.categoryRepository.save(category);
     } catch (error) {
-      if (error instanceof QueryFailedError && error.driverError?.code === '23505') {
-        throw new ConflictException(`Category with name "${name}" already exists`);
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError?.code === '23505'
+      ) {
+        throw new ConflictException(
+          `Category with name "${name}" already exists`,
+        );
       }
       throw error;
     }
@@ -57,14 +68,19 @@ export class CategoryService {
     return category;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     const category = await this.findOne(id);
     const name = updateCategoryDto.name?.trim();
 
     if (name && name !== category.name) {
       const duplicate = await this.categoryRepository.findOneBy({ name });
       if (duplicate && duplicate.id !== id) {
-        throw new ConflictException(`Category with name "${name}" already exists`);
+        throw new ConflictException(
+          `Category with name "${name}" already exists`,
+        );
       }
       category.name = name;
     }
@@ -76,7 +92,10 @@ export class CategoryService {
     return this.categoryRepository.save(category);
   }
 
-  async updateStatus(id: string, updateCategoryStatusDto: UpdateCategoryStatusDto): Promise<Category> {
+  async updateStatus(
+    id: string,
+    updateCategoryStatusDto: UpdateCategoryStatusDto,
+  ): Promise<Category> {
     const category = await this.findOne(id);
     category.status = updateCategoryStatusDto.status;
     return this.categoryRepository.save(category);

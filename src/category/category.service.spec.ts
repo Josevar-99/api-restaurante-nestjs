@@ -37,7 +37,10 @@ describe('CategoryService', () => {
   });
 
   it('should create a category with a trimmed name and default ACTIVE status', async () => {
-    const dto = { name: '  Burgers  ', description: 'Grilled and cooked dishes.' };
+    const dto = {
+      name: '  Burgers  ',
+      description: 'Grilled and cooked dishes.',
+    };
     const createdCategory = {
       id: '1',
       name: 'Burgers',
@@ -71,15 +74,28 @@ describe('CategoryService', () => {
     });
 
     await expect(
-      service.create({ name: 'Burgers', description: 'Grilled and cooked dishes.' }),
+      service.create({
+        name: 'Burgers',
+        description: 'Grilled and cooked dishes.',
+      }),
     ).rejects.toThrow(ConflictException);
     expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('should return all categories ordered alphabetically', async () => {
     const categories = [
-      { id: '2', name: 'Burgers', description: 'A', status: CategoryStatus.ACTIVE },
-      { id: '1', name: 'Salads', description: 'B', status: CategoryStatus.INACTIVE },
+      {
+        id: '2',
+        name: 'Burgers',
+        description: 'A',
+        status: CategoryStatus.ACTIVE,
+      },
+      {
+        id: '1',
+        name: 'Salads',
+        description: 'B',
+        status: CategoryStatus.INACTIVE,
+      },
     ];
 
     repository.find.mockResolvedValue(categories);
@@ -90,7 +106,12 @@ describe('CategoryService', () => {
 
   it('should return only active categories', async () => {
     const activeCategories = [
-      { id: '2', name: 'Burgers', description: 'A', status: CategoryStatus.ACTIVE },
+      {
+        id: '2',
+        name: 'Burgers',
+        description: 'A',
+        status: CategoryStatus.ACTIVE,
+      },
     ];
 
     repository.find.mockResolvedValue(activeCategories);
@@ -119,7 +140,9 @@ describe('CategoryService', () => {
   it('should throw NotFoundException when the category does not exist', async () => {
     repository.findOneBy.mockResolvedValue(null);
 
-    await expect(service.findOne('missing-id')).rejects.toThrow(NotFoundException);
+    await expect(service.findOne('missing-id')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should update the category name and description trimming the name', async () => {
@@ -184,9 +207,9 @@ describe('CategoryService', () => {
       return Promise.resolve(null);
     });
 
-    await expect(
-      service.update('1', { name: 'Burgers' }),
-    ).rejects.toThrow(ConflictException);
+    await expect(service.update('1', { name: 'Burgers' })).rejects.toThrow(
+      ConflictException,
+    );
   });
 
   it('should update the category status', async () => {

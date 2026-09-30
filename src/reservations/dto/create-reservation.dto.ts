@@ -19,18 +19,28 @@ export class CreateReservationDto {
   @MinLength(4, { message: 'Enter a valid name' })
   name: string;
 
-  @ApiProperty({ example: '+573001234567', description: 'Customer phone number' })
+  @ApiProperty({
+    example: '+573001234567',
+    description: 'Customer phone number',
+  })
   @IsString()
   @IsNotEmpty()
   @Matches(/^\+?[0-9]{10,15}$/, { message: 'Enter a valid phone number' })
   phone: string;
 
-  @ApiProperty({ example: 'juan@example.com', description: 'Customer email', required: false })
+  @ApiProperty({
+    example: 'juan@example.com',
+    description: 'Customer email',
+    required: false,
+  })
   @IsOptional()
   @IsEmail({}, { message: 'Enter a valid email' })
   email?: string;
 
-  @ApiProperty({ example: '2026-09-25T19:00:00.000Z', description: 'Reservation date' })
+  @ApiProperty({
+    example: '2026-09-25T19:00:00.000Z',
+    description: 'Reservation date',
+  })
   @Type(() => Date)
   @IsDate({ message: 'Enter a valid date' })
   date: Date;
@@ -41,4 +51,3 @@ export class CreateReservationDto {
   @IsNotEmpty({ message: 'Quantity is required' })
   quantity: number;
 }
-
