@@ -27,4 +27,3 @@ export class Reservation {
   @Column({ type: 'int' })
   quantity: number;
 }
-

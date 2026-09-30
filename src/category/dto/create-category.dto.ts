@@ -9,7 +9,9 @@ export class CreateCategoryDto {
   @MaxLength(100, { message: 'Enter no more than 100 characters' })
   name: string;
 
-  @ApiProperty({ example: 'Grilled and cooked dishes served as the main course.' })
+  @ApiProperty({
+    example: 'Grilled and cooked dishes served as the main course.',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(500, { message: 'Enter no more than 500 characters' })

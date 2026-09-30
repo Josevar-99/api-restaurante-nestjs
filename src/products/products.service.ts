@@ -1,7 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product, ProductAvailability, ProductStatus } from './entities/product.entity.js';
+import {
+  Product,
+  ProductAvailability,
+  ProductStatus,
+} from './entities/product.entity.js';
 import { Category } from '../category/entities/category.entity.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
@@ -9,8 +17,10 @@ import { UpdateProductDto } from './dto/update-product.dto.js';
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product) private readonly productRepo: Repository<Product>,
-    @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
   ) {}
 
   async create(dto: CreateProductDto) {
@@ -37,7 +47,9 @@ export class ProductsService {
   async update(id: string, dto: UpdateProductDto) {
     const product = await this.findOne(id);
     if (dto.categoryId) {
-      const category = await this.categoryRepo.findOneBy({ id: dto.categoryId });
+      const category = await this.categoryRepo.findOneBy({
+        id: dto.categoryId,
+      });
       if (!category) throw new BadRequestException('La categoría no existe');
       product.category = category;
       product.categoryId = category.id;
@@ -65,7 +77,9 @@ export class ProductsService {
   async assertAvailableForOrder(id: string) {
     const product = await this.findOne(id);
     if (product.availability === ProductAvailability.UNAVAILABLE) {
-      throw new BadRequestException('El producto no está disponible para pedidos');
+      throw new BadRequestException(
+        'El producto no está disponible para pedidos',
+      );
     }
     return product;
   }

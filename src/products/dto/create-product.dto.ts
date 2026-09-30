@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsNumber, IsOptional, IsPositive, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateProductDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
