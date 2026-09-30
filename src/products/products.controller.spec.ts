@@ -6,15 +6,20 @@ import { ProductsService } from './products.service';
 describe('ProductsController', () => {
   let controller: ProductsController;
   let service: {
-    create: any; findAll: any; findAllForMenu: any; findOne: any; 
-    update: any; changeStatus: any; changeAvailability: any;
+    create: any;
+    findAll: any;
+    findAllForMenu: any;
+    findOne: any;
+    update: any;
+    changeStatus: any;
+    changeAvailability: any;
   };
 
   beforeEach(async () => {
     service = {
       create: jest.fn(),
       findAll: jest.fn(),
-      findAllForMenu: jest.fn(), 
+      findAllForMenu: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
       changeStatus: jest.fn(),
@@ -34,7 +39,11 @@ describe('ProductsController', () => {
   });
 
   it('create() delega en productsService.create', async () => {
-    const dto = { name: 'Pasta Alfredo', price: 25000, categoryId: 'cat-1' } as any;
+    const dto = {
+      name: 'Pasta Alfredo',
+      price: 25000,
+      categoryId: 'cat-1',
+    } as any;
     await controller.create(dto);
     expect(service.create).toHaveBeenCalledWith(dto);
   });
@@ -66,7 +75,12 @@ describe('ProductsController', () => {
   });
 
   it('changeAvailability() extrae dto.availability y lo pasa al service', async () => {
-    await controller.changeAvailability('prod-1', { availability: 'UNAVAILABLE' } as any);
-    expect(service.changeAvailability).toHaveBeenCalledWith('prod-1', 'UNAVAILABLE');
+    await controller.changeAvailability('prod-1', {
+      availability: 'UNAVAILABLE',
+    } as any);
+    expect(service.changeAvailability).toHaveBeenCalledWith(
+      'prod-1',
+      'UNAVAILABLE',
+    );
   });
 });

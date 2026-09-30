@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'; // CAMBIO: + ParseUUIDPipe
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common'; // CAMBIO: + ParseUUIDPipe
 import { ProductsService } from './products.service.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
@@ -19,29 +27,41 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-
   @Get('menu')
   findMenu() {
     return this.productsService.findAllForMenu();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { // CAMBIO: ParseUUIDPipe
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    // CAMBIO: ParseUUIDPipe
     return this.productsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto) { // CAMBIO
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProductDto,
+  ) {
+    // CAMBIO
     return this.productsService.update(id, dto);
   }
 
   @Patch(':id/status')
-  changeStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateStatusDto) { // CAMBIO
+  changeStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateStatusDto,
+  ) {
+    // CAMBIO
     return this.productsService.changeStatus(id, dto.status);
   }
 
   @Patch(':id/availability')
-  changeAvailability(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAvailabilityDto) { // CAMBIO
+  changeAvailability(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateAvailabilityDto,
+  ) {
+    // CAMBIO
     return this.productsService.changeAvailability(id, dto.availability);
   }
 }
