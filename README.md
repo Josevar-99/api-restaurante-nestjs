@@ -14,7 +14,7 @@ Autor: Jose Vargas
 
 ## Requisitos previos
 
-- Node.js 20+
+- Node.js 24+
 - Docker y Docker Compose
 
 ## Instalación
