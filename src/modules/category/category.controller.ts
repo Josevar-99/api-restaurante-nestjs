@@ -13,7 +13,11 @@ export class CategoryController {
 
   @Post()
   @ApiOperation({ summary: 'Create a restaurant menu category' })
-  @ApiResponse({ status: 201, description: 'Category created successfully.', type: Category })
+  @ApiResponse({
+    status: 201,
+    description: 'Category created successfully.',
+    type: Category,
+  })
   @ApiResponse({ status: 409, description: 'Category name already exists.' })
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
@@ -21,14 +25,22 @@ export class CategoryController {
 
   @Get()
   @ApiOperation({ summary: 'List all categories for administrators' })
-  @ApiResponse({ status: 200, description: 'List of categories.', type: [Category] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of categories.',
+    type: [Category],
+  })
   findAll() {
     return this.categoryService.findAll();
   }
 
   @Get('available')
   @ApiOperation({ summary: 'List active categories for the customer menu' })
-  @ApiResponse({ status: 200, description: 'List of active categories.', type: [Category] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of active categories.',
+    type: [Category],
+  })
   findAvailable() {
     return this.categoryService.findAvailable();
   }
@@ -43,18 +55,32 @@ export class CategoryController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a category name or description' })
-  @ApiResponse({ status: 200, description: 'Category updated successfully.', type: Category })
+  @ApiResponse({
+    status: 200,
+    description: 'Category updated successfully.',
+    type: Category,
+  })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiResponse({ status: 409, description: 'Category name already exists.' })
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+  ) {
     return this.categoryService.update(id, updateCategoryDto);
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Activate or deactivate a category' })
-  @ApiResponse({ status: 200, description: 'Category status updated successfully.', type: Category })
+  @ApiResponse({
+    status: 200,
+    description: 'Category status updated successfully.',
+    type: Category,
+  })
   @ApiResponse({ status: 404, description: 'Category not found.' })
-  updateStatus(@Param('id') id: string, @Body() updateCategoryStatusDto: UpdateCategoryStatusDto) {
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateCategoryStatusDto: UpdateCategoryStatusDto,
+  ) {
     return this.categoryService.updateStatus(id, updateCategoryStatusDto);
   }
 }

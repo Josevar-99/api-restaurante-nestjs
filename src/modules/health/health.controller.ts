@@ -7,13 +7,10 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
-
-  @ApiOperation({summary: 'Verifica el estado del servicio'})
+  @ApiOperation({ summary: 'Verifica el estado del servicio' })
   @ApiResponse({ status: 200, type: HealthResponseDto })
   @Get()
   check() {
     return this.healthService.getStatus();
   }
-
 }
-  

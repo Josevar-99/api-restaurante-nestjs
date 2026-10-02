@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class HealthResponseDto {
-    @ApiProperty({ example: 'ok'})
-    status:string
-    @ApiProperty({ example: 'restaurant-api'})
-    service:string
+  @ApiProperty({ example: 'ok' })
+  status: string;
+  @ApiProperty({ example: 'restaurant-api' })
+  service: string;
 }

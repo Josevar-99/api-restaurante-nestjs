@@ -4,7 +4,11 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Product, ProductStatus, ProductAvailability } from './entities/product.entity';
+import {
+  Product,
+  ProductStatus,
+  ProductAvailability,
+} from './entities/product.entity';
 import { Category } from '../category/entities/category.entity';
 
 describe('ProductsService', () => {
@@ -41,7 +45,11 @@ describe('ProductsService', () => {
       categoryRepo.findOneBy.mockResolvedValue(null);
 
       await expect(
-        service.create({ name: 'Pizza', price: 10, categoryId: 'no-existe' } as any),
+        service.create({
+          name: 'Pizza',
+          price: 10,
+          categoryId: 'no-existe',
+        } as any),
       ).rejects.toThrow(BadRequestException);
 
       expect(productRepo.save).not.toHaveBeenCalled();
@@ -58,7 +66,10 @@ describe('ProductsService', () => {
 
       expect(categoryRepo.findOneBy).toHaveBeenCalledWith({ id: 'cat-1' });
       expect(productRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Limonada Natural', category: mockCategory }),
+        expect.objectContaining({
+          name: 'Limonada Natural',
+          category: mockCategory,
+        }),
       );
       expect(productRepo.save).toHaveBeenCalled();
       expect(result).toMatchObject({ name: 'Limonada Natural' });
@@ -78,7 +89,9 @@ describe('ProductsService', () => {
   describe('findOne', () => {
     it('lanza NotFoundException si el producto no existe', async () => {
       productRepo.findOneBy.mockResolvedValue(null);
-      await expect(service.findOne('id-inexistente')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('id-inexistente')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('retorna el producto si existe', async () => {
@@ -101,14 +114,18 @@ describe('ProductsService', () => {
     it('lanza NotFoundException si el producto no existe', async () => {
       productRepo.findOneBy.mockResolvedValue(null);
 
-      await expect(service.update('no-existe', { price: 10 } as any)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('no-existe', { price: 10 } as any),
+      ).rejects.toThrow(NotFoundException);
       expect(productRepo.save).not.toHaveBeenCalled();
     });
 
     it('lanza BadRequestException si la nueva categoría no existe', async () => {
-      productRepo.findOneBy.mockResolvedValue({ id: 'prod-1', name: 'Pizza', price: 10 });
+      productRepo.findOneBy.mockResolvedValue({
+        id: 'prod-1',
+        name: 'Pizza',
+        price: 10,
+      });
       categoryRepo.findOneBy.mockResolvedValue(null);
 
       await expect(
@@ -119,7 +136,11 @@ describe('ProductsService', () => {
     });
 
     it('actualiza la categoría cuando existe', async () => {
-      productRepo.findOneBy.mockResolvedValue({ id: 'prod-1', name: 'Pizza', price: 10 });
+      productRepo.findOneBy.mockResolvedValue({
+        id: 'prod-1',
+        name: 'Pizza',
+        price: 10,
+      });
       categoryRepo.findOneBy.mockResolvedValue(mockCategory);
 
       await service.update('prod-1', { categoryId: 'cat-1' } as any);
@@ -138,11 +159,19 @@ describe('ProductsService', () => {
         price: 10,
       });
 
-      await service.update('prod-1', { name: 'Pizza XL', description: 'nueva', price: 20 } as any);
+      await service.update('prod-1', {
+        name: 'Pizza XL',
+        description: 'nueva',
+        price: 20,
+      } as any);
 
       expect(categoryRepo.findOneBy).not.toHaveBeenCalled();
       expect(productRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Pizza XL', description: 'nueva', price: 20 }),
+        expect.objectContaining({
+          name: 'Pizza XL',
+          description: 'nueva',
+          price: 20,
+        }),
       );
     });
 
@@ -157,7 +186,11 @@ describe('ProductsService', () => {
       await service.update('prod-1', {} as any);
 
       expect(productRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Pizza', description: 'clásica', price: 10 }),
+        expect.objectContaining({
+          name: 'Pizza',
+          description: 'clásica',
+          price: 10,
+        }),
       );
     });
   });
@@ -175,13 +208,21 @@ describe('ProductsService', () => {
     });
 
     it('actualiza la availability del producto', async () => {
-      const product = { id: 'prod-1', availability: ProductAvailability.AVAILABLE };
+      const product = {
+        id: 'prod-1',
+        availability: ProductAvailability.AVAILABLE,
+      };
       productRepo.findOneBy.mockResolvedValue(product);
 
-      await service.changeAvailability('prod-1', ProductAvailability.UNAVAILABLE);
+      await service.changeAvailability(
+        'prod-1',
+        ProductAvailability.UNAVAILABLE,
+      );
 
       expect(productRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ availability: ProductAvailability.UNAVAILABLE }),
+        expect.objectContaining({
+          availability: ProductAvailability.UNAVAILABLE,
+        }),
       );
     });
   });
@@ -193,14 +234,21 @@ describe('ProductsService', () => {
         availability: ProductAvailability.UNAVAILABLE,
       });
 
-      await expect(service.assertAvailableForOrder('prod-1')).rejects.toThrow(BadRequestException);
+      await expect(service.assertAvailableForOrder('prod-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('retorna el producto si está AVAILABLE', async () => {
-      const product = { id: 'prod-1', availability: ProductAvailability.AVAILABLE };
+      const product = {
+        id: 'prod-1',
+        availability: ProductAvailability.AVAILABLE,
+      };
       productRepo.findOneBy.mockResolvedValue(product);
 
-      await expect(service.assertAvailableForOrder('prod-1')).resolves.toEqual(product);
+      await expect(service.assertAvailableForOrder('prod-1')).resolves.toEqual(
+        product,
+      );
     });
   });
 });
