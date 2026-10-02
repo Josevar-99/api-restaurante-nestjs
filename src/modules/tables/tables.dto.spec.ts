@@ -1,7 +1,7 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CreateTableDto } from '../src/dtos/create-table.dto.js';
-import { UpdateTableStatusDto } from '../src/dtos/update-table-status.dto.js';
+import { CreateTableDto } from './dto/create-table.dto.js';
+import { UpdateTableStatusDto } from './dto/update-table-status.dto.js';
 
 // Con class-validator se arma una instancia real de la clase (plainToInstance)
 // y se llama a validate(); un array vacío significa que no hubo errores.

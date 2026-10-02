@@ -16,18 +16,17 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "oxlint src/ test/",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --config ./jest.config.cjs",
-    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch --config ./jest.config.cjs",
-    "test:cov": "node --experimental-vm-modules node_modules/.bin/jest --coverage --config ./jest.config.cjs",
-    "test:debug": "node --experimental-vm-modules node_modules/.bin/jest --runInBand --inspect-brk --config ./jest.config.cjs",
-    "test:e2e": "node --experimental-vm-modules node_modules/.bin/jest --config ./test/jest-e2e.json"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:debug": "node --inspect-brk --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.0",
     "@nestjs/core": "^12.0.1",
     "@nestjs/mapped-types": "^12.0.0",
-    "@nestjs/observe": "^0.1.8",
     "@nestjs/platform-express": "^12.0.1",
     "@nestjs/swagger": "^12.0.1",
     "@nestjs/typeorm": "^12.0.1",
@@ -49,12 +48,12 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
-    "@types/supertest": "^7.0.0",
+    "@types/supertest": "^7.2.1",
     "jest": "^30.5.2",
     "oxlint": "^1.58.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
-    "supertest": "^7.0.0",
+    "supertest": "^7.3.0",
     "ts-jest": "^29.4.13",
     "typescript": "^6.0.2"
   }
