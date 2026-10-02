@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { Repository } from 'typeorm';
-import { TablesService } from '../src/services/tables.service.js';
-import type { TableEntity } from '../src/entities/table.entity.js';
+import { TablesService } from './tables.service.js';
+import type { TableEntity } from './entities/table.entity.js';
 
 interface TableWhere {
     status?: string;
