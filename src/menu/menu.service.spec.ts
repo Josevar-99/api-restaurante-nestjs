@@ -174,9 +174,7 @@ describe('MenuService', () => {
   it('should return only ACTIVE categories', async () => {
     categoryRepository.find.mockResolvedValue([activeCategory]);
 
-    await expect(service.findCategories()).resolves.toEqual([
-      activeCategory,
-    ]);
+    await expect(service.findCategories()).resolves.toEqual([activeCategory]);
 
     expect(categoryRepository.find).toHaveBeenCalledWith({
       where: {
@@ -246,9 +244,9 @@ describe('MenuService', () => {
   it('should throw NotFoundException when the product does not exist or is inactive', async () => {
     productRepository.findOne.mockResolvedValue(null);
 
-    await expect(
-      service.findProduct('product-not-found'),
-    ).rejects.toThrow(NotFoundException);
+    await expect(service.findProduct('product-not-found')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw NotFoundException when the product category is inactive', async () => {
@@ -260,8 +258,8 @@ describe('MenuService', () => {
       },
     });
 
-    await expect(
-      service.findProduct(availableProduct.id),
-    ).rejects.toThrow(NotFoundException);
+    await expect(service.findProduct(availableProduct.id)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });

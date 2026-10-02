@@ -23,10 +23,6 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       validationSchema: envValidationSchema,
     }),
     ObserveModule.forRootAsync({
-
-
-
-      
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (observeConfig: ConfigService) => ({

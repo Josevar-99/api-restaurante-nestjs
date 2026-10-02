@@ -1,15 +1,5 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MenuService } from './menu.service.js';
 
 @Controller('menu')
@@ -54,9 +44,7 @@ export class MenuController {
     status: 404,
     description: 'La categoría no existe o no está activa.',
   })
-  findCategoryProducts(
-    @Param('categoryId', ParseUUIDPipe) categoryId: string,
-  ) {
+  findCategoryProducts(@Param('categoryId', ParseUUIDPipe) categoryId: string) {
     return this.menuService.findCategoryProducts(categoryId);
   }
 
@@ -73,7 +61,8 @@ export class MenuController {
   })
   @ApiResponse({
     status: 404,
-    description: 'El producto no existe, está inactivo o no está disponible en el menú.',
+    description:
+      'El producto no existe, está inactivo o no está disponible en el menú.',
   })
   findProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.menuService.findProduct(id);

@@ -77,9 +77,9 @@ describe('MenuController', () => {
 
     service.findCategoryProducts.mockResolvedValue(response);
 
-    await expect(
-      controller.findCategoryProducts(categoryId),
-    ).resolves.toEqual(response);
+    await expect(controller.findCategoryProducts(categoryId)).resolves.toEqual(
+      response,
+    );
 
     expect(service.findCategoryProducts).toHaveBeenCalledWith(categoryId);
   });
@@ -94,9 +94,7 @@ describe('MenuController', () => {
 
     service.findProduct.mockResolvedValue(response);
 
-    await expect(
-      controller.findProduct(productId),
-    ).resolves.toEqual(response);
+    await expect(controller.findProduct(productId)).resolves.toEqual(response);
 
     expect(service.findProduct).toHaveBeenCalledWith(productId);
   });
