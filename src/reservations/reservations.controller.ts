@@ -139,4 +139,14 @@ export class ReservationsController {
       updateReservationStatusDto,
     );
   }
+
+  /**
+   * Cancel a reservation
+   */
+  @Patch(':id/cancel')
+  cancelReservation(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.reservationsService.cancelReservation(id);
+  }
 }
