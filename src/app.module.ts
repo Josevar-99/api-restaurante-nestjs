@@ -6,14 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvConfig } from './config/env.config.js';
 import { envValidationSchema } from './config/env.validation.schema.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CategoryModule } from './category/category.module.js';
+import { CategoryModule } from './modules/category/category.module.js';
 import { HealthModule } from './modules/health/health.module.js';
-import { TablesModule } from './modules/tables.module.js';
-import { ReservationsModule } from './reservations/reservations.module.js';
-import { ProductsModule } from './products/products.module.js';
+import { TablesModule } from './modules/tables/tables.module.js';
+import { ReservationsModule } from './modules/reservations/reservations.module.js';
+import { ProductsModule } from './modules/products/products.module.js';
 import { MenuModule } from './menu/menu.module.js';
-
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
@@ -21,13 +19,6 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       isGlobal: true,
       load: [EnvConfig],
       validationSchema: envValidationSchema,
-    }),
-    ObserveModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (observeConfig: ConfigService) => ({
-        ...observeConfig.getOrThrow('observe'),
-      }),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
