@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Category } from '../category/entities/category.entity.js';
-import { CategoryStatus } from '../category/enums/category-status.enum.js';
+import { Category } from '../modules/category/entities/category.entity.js';
+import { CategoryStatus } from '../modules/category/enums/category-status.enum.js';
 import {
   Product,
   ProductAvailability,
   ProductStatus,
-} from '../products/entities/product.entity.js';
+} from '../modules/products/entities/product.entity.js';
 
 @Injectable()
 export class MenuService {
