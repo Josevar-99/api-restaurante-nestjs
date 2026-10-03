@@ -10,6 +10,7 @@ import { HealthModule } from './modules/health/health.module.js';
 import { TablesModule } from './modules/tables/tables.module.js';
 import { ReservationsModule } from './modules/reservations/reservations.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
+import { MenuModule } from './menu/menu.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ProductsModule } from './modules/products/products.module.js';
     ReservationsModule,
     HealthModule,
     TablesModule,
+    MenuModule,
   ],
   controllers: [AppController],
   providers: [AppService],
