@@ -10,11 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { TablesService } from '../services/tables.service.js';
-import { CreateTableDto } from '../dtos/create-table.dto.js';
-import { UpdateTableDto } from '../dtos/update-table.dto.js';
-import { UpdateTableStatusDto } from '../dtos/update-table-status.dto.js';
-import { FilterTablesDto } from '../dtos/filter-tables.dto.js';
+import { TablesService } from './tables.service.js';
+import { CreateTableDto } from './dto/create-table.dto.js';
+import { UpdateTableDto } from './dto/update-table.dto.js';
+import { UpdateTableStatusDto } from './dto/update-table-status.dto.js';
+import { FilterTablesDto } from './dto/filter-tables.dto.js';
 
 @ApiTags('Tables')
 @Controller('tables')

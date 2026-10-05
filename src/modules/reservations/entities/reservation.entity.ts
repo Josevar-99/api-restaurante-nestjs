@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TableEntity } from '../../entities/table.entity.js';
+import { TableEntity } from '../../tables/entities/table.entity.js';
 import { DEFAULT_DURATION_MINUTES } from '../reservation.constants.js';
 import { ReservationStatus } from '../reservation-status.enum.js';
 

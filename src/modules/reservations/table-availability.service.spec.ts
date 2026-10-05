@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EntityManager, In } from 'typeorm';
-import { TableEntity } from '../entities/table.entity.js';
+import { TableEntity } from '../tables/entities/table.entity.js';
 import { Reservation } from './entities/reservation.entity.js';
 import { ReservationStatus } from './reservation-status.enum.js';
 import { TableAvailabilityService } from './table-availability.service.js';

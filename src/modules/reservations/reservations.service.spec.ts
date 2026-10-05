@@ -6,7 +6,7 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
-import { TableEntity } from '../entities/table.entity.js';
+import { TableEntity } from '../tables/entities/table.entity.js';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { UpdateReservationDto } from './dto/update-reservation.dto.js';
 import { Reservation } from './entities/reservation.entity.js';
