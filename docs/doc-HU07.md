@@ -75,7 +75,7 @@ Respones
   "reason": "SCHEDULE_CONFLICT"
 }
 
-test
+testing
 
 ![alt text](<Captura desde 2026-10-06 15-41-30.png>)
 
