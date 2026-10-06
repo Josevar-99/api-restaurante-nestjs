@@ -74,3 +74,9 @@ Respones
   "rule": "RN-045",
   "reason": "SCHEDULE_CONFLICT"
 }
+
+test
+
+![alt text](<Captura desde 2026-10-06 15-41-30.png>)
+
+![alt text](<Captura desde 2026-10-06 13-53-09.png>)
