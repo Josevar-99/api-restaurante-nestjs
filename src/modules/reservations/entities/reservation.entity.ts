@@ -95,4 +95,8 @@ export class Reservation {
   @ApiProperty({ description: 'Last update timestamp' })
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @ApiProperty({ description: 'Cancellation timestamp, if cancelled' })
+  @Column({ type: 'timestamptz', nullable: true })
+  cancelledAt: Date | null;
 }

@@ -311,31 +311,34 @@ export class ReservationsService {
   }
 
   async cancelReservation(id: string): Promise<Reservation> {
-    const reservation = await this.reservationRepository.findOneBy({id});
+    const reservation = await this.reservationRepository.findOneBy({ id });
 
-    if(!reservation){
-      throw new NotFoundException(`Reservation with id "${id}" was not found`);  
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with id "${id}" was not found`);
     }
-  
-    if(reservation.status === ReservationStatus.CANCELLED){
+
+    if (reservation.status === ReservationStatus.CANCELLED) {
       throw new ConflictException({
         error: `Reservation with id "${id}" is already cancelled`,
         from: reservation.status,
       });
     }
 
-    if(reservation.status === ReservationStatus.COMPLETED || reservation.status === ReservationStatus.CHECKED_IN){
+    if (
+      reservation.status === ReservationStatus.COMPLETED ||
+      reservation.status === ReservationStatus.CHECKED_IN ||
+      reservation.status === ReservationStatus.NO_SHOW
+    ) {
       throw new ConflictException({
         error: `Reservation with id "${id}" cannot be cancelled as it is already ${reservation.status}`,
         from: reservation.status,
       });
     }
 
-    if(reservation.status === ReservationStatus.PENDING || reservation.status === ReservationStatus.CONFIRMED){
-      reservation.status = ReservationStatus.CANCELLED;
-      return this.reservationRepository.save(reservation);
-    }
+    reservation.status = ReservationStatus.CANCELLED;
+    const cancelled = new Date();
+    reservation.cancelledAt = cancelled;
 
-    return reservation;
+    return this.reservationRepository.save(reservation);
   }
 }
