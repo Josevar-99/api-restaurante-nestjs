@@ -74,3 +74,11 @@ Respones
   "rule": "RN-045",
   "reason": "SCHEDULE_CONFLICT"
 }
+
+
+
+tests
+
+![alt text](image.png)
+
+![alt text](image-1.png)
