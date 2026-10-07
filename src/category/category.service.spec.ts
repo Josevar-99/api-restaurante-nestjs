@@ -5,14 +5,15 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { CategoryService } from './category.service.js';
 import { Category } from './entities/category.entity.js';
 import { CategoryStatus } from './enums/category-status.enum.js';
+import { FindOptionsWhere } from 'typeorm';
 
 describe('CategoryService', () => {
   let service: CategoryService;
   let repository: {
-    findOneBy: jest.Mock;
-    save: jest.Mock;
-    create: jest.Mock;
-    find: jest.Mock;
+    findOneBy: jest.MockedFunction<any>;
+    save: jest.MockedFunction<any>;
+    create: jest.MockedFunction<any>;
+    find: jest.MockedFunction<any>;
   };
 
   beforeEach(async () => {
@@ -158,15 +159,17 @@ describe('CategoryService', () => {
       description: 'Updated description',
     };
 
-    repository.findOneBy.mockImplementation((criteria) => {
-      if (criteria.id === '1') {
-        return Promise.resolve(currentCategory);
-      }
-      if (criteria.name === 'New Name') {
+    repository.findOneBy.mockImplementation(
+      (criteria: FindOptionsWhere<Category>) => {
+        if (criteria.id === '1') {
+          return Promise.resolve(currentCategory);
+        }
+        if (criteria.name === 'New Name') {
+          return Promise.resolve(null);
+        }
         return Promise.resolve(null);
-      }
-      return Promise.resolve(null);
-    });
+      },
+    );
     repository.save.mockResolvedValue(updatedCategory);
 
     await expect(
@@ -192,20 +195,22 @@ describe('CategoryService', () => {
       status: CategoryStatus.ACTIVE,
     };
 
-    repository.findOneBy.mockImplementation((criteria) => {
-      if (criteria.id === '1') {
-        return Promise.resolve(currentCategory);
-      }
-      if (criteria.name === 'Burgers') {
-        return Promise.resolve({
-          id: '2',
-          name: 'Burgers',
-          description: 'Another description',
-          status: CategoryStatus.ACTIVE,
-        });
-      }
-      return Promise.resolve(null);
-    });
+    repository.findOneBy.mockImplementation(
+      (criteria: FindOptionsWhere<Category>) => {
+        if (criteria.id === '1') {
+          return Promise.resolve(currentCategory);
+        }
+        if (criteria.name === 'Burgers') {
+          return Promise.resolve({
+            id: '2',
+            name: 'Burgers',
+            description: 'Another description',
+            status: CategoryStatus.ACTIVE,
+          });
+        }
+        return Promise.resolve(null);
+      },
+    );
 
     await expect(service.update('1', { name: 'Burgers' })).rejects.toThrow(
       ConflictException,

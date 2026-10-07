@@ -3,13 +3,13 @@ import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { ProductsService } from './products.service.js';
 import {
   Product,
   ProductStatus,
   ProductAvailability,
-} from './entities/product.entity';
-import { Category } from '../category/entities/category.entity';
+} from './entities/product.entity.js';
+import { Category } from '../category/entities/category.entity.js';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -23,7 +23,9 @@ describe('ProductsService', () => {
       findOneBy: jest.fn(),
       find: jest.fn(),
       create: jest.fn((dto) => dto),
-      save: jest.fn((entity) => Promise.resolve({ id: 'prod-1', ...entity })),
+      save: jest.fn((entity: Partial<Product>) =>
+        Promise.resolve({ id: 'prod-1', ...entity }),
+      ),
     };
     categoryRepo = {
       findOneBy: jest.fn(),
