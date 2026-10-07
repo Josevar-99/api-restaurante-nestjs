@@ -139,4 +139,27 @@ export class ReservationsController {
       updateReservationStatusDto,
     );
   }
+
+  @Patch(':id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Cancel a reservation',
+    description:
+      'Moves a reservation to CANCELLED state, if it is currently PENDING or CONFIRMED.',
+  })
+  @ApiOkResponse({
+    description: 'The reservation with its new status.',
+    type: Reservation,
+  })
+  @ApiBadRequestResponse({
+    description: 'The provided reservation ID is not a valid UUID.',
+  })
+  @ApiNotFoundResponse({ description: 'No reservation with that id.' })
+  @ApiConflictResponse({
+    description:
+      'The reservation cannot be cancelled because it is not in PENDING or CONFIRMED state.',
+  })
+  cancelReservation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reservationsService.cancelReservation(id);
+  }
 }
