@@ -108,10 +108,12 @@ export class ReservationsController {
   @ApiOkResponse({ description: 'The updated reservation.', type: Reservation })
   @ApiNotFoundResponse({ description: 'No reservation with that id (RN-052).' })
   @ApiBadRequestResponse({
-    description: 'Validation failed, or the new date/time is in the past (RN-053).',
+    description:
+      'Validation failed, or the new date/time is in the past (RN-053).',
   })
   @ApiConflictResponse({
-    description: 'No tables available for the new slot, or schedule conflicts arise (RN-058).',
+    description:
+      'No tables available for the new slot, or schedule conflicts arise (RN-058).',
   })
   update(
     @Param('id', ParseUUIDPipe) id: string,

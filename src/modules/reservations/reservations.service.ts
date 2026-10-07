@@ -186,7 +186,8 @@ export class ReservationsService {
 
     // Preparar el objeto con los datos de contacto parciales comunes
     const patch: Partial<Reservation> = {};
-    if (dto.customerName !== undefined) patch.customerName = dto.customerName.trim();
+    if (dto.customerName !== undefined)
+      patch.customerName = dto.customerName.trim();
     if (dto.phone !== undefined) patch.phone = dto.phone.trim();
     if (dto.email !== undefined) patch.email = dto.email.trim().toLowerCase();
 
@@ -224,7 +225,9 @@ export class ReservationsService {
 
       if (!table) {
         throw new ConflictException({
-          error: AVAILABILITY_MESSAGES[reason] ?? 'No table is available for the requested modification',
+          error:
+            AVAILABILITY_MESSAGES[reason] ??
+            'No table is available for the requested modification',
           rule: this.ruleFor(reason) ?? 'RN-058',
           reason,
         });
@@ -369,4 +372,3 @@ export class ReservationsService {
     }
   }
 }
-

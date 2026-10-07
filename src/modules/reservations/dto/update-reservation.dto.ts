@@ -17,7 +17,7 @@ const PHONE_REGEX = /^\+?\d{7,15}$/;
 
 /**
  * Payload of `PATCH /api/v1/reservations/:id`.
- * 
+ *
  * Updated to allow modifying date, time, and guests.
  * Modifying these fields triggers automatic availability re-validation (RN-055).
  */
@@ -61,15 +61,20 @@ export class UpdateReservationDto {
   email?: string;
 
   @ApiPropertyOptional({
-    description: 'New reservation date (YYYY-MM-DD). Triggers re-validation (RN-055).',
+    description:
+      'New reservation date (YYYY-MM-DD). Triggers re-validation (RN-055).',
     example: '2026-10-15',
   })
   @IsOptional()
-  @IsISO8601({}, { message: 'date must be a valid ISO8601 date string (YYYY-MM-DD)' })
+  @IsISO8601(
+    {},
+    { message: 'date must be a valid ISO8601 date string (YYYY-MM-DD)' },
+  )
   date?: string;
 
   @ApiPropertyOptional({
-    description: 'New reservation time (HH:mm). Triggers re-validation (RN-055).',
+    description:
+      'New reservation time (HH:mm). Triggers re-validation (RN-055).',
     example: '19:30',
   })
   @IsOptional()
