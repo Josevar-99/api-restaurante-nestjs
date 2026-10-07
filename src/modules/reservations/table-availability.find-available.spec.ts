@@ -103,6 +103,19 @@ describe('TableAvailabilityService.findAvailable (HU-006)', () => {
     expect(result.tables.map((t) => t.id)).toEqual([1, 3]);
   });
 
+  it('handles the HH:mm:ss time format that PostgreSQL returns', async () => {
+    stubQueryBuilder({ many: [table(1, 2), table(2, 4)] });
+    reservationRepository.find.mockResolvedValue([booking(2, '19:00:00')]);
+
+    const result = await service.findAvailable({
+      guests: 2,
+      date: DAY,
+      time: '19:30',
+    });
+
+    expect(result.tables.map((t) => t.id)).toEqual([1]);
+  });
+
   it('keeps a table whose previous sitting ends exactly at the start', async () => {
     stubQueryBuilder({ many: [table(1, 4)] });
     reservationRepository.find.mockResolvedValue([booking(1, '17:00', 120)]);

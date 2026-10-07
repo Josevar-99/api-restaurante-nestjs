@@ -226,7 +226,8 @@ export class TableAvailabilityService {
     for (const reservation of sameDay) {
       const existing = buildWindow(
         reservation.date,
-        reservation.time,
+        // PostgreSQL returns `time` columns as HH:mm:ss; the helpers expect HH:mm.
+        reservation.time.slice(0, 5),
         reservation.durationMinutes,
       );
       if (

@@ -272,11 +272,11 @@ export class ReservationsService {
   /** End instant of a reservation, useful for clients rendering the slot. */
   endsAt(reservation: Reservation): Date {
     return addMinutes(
-      combineDateAndTime(reservation.date, reservation.time),
+      // PostgreSQL returns `time` columns as HH:mm:ss; the helpers expect HH:mm.
+      combineDateAndTime(reservation.date, reservation.time.slice(0, 5)),
       reservation.durationMinutes,
     );
   }
-
   /**
    * Rejects a date/time that has already passed (RN-042 when booking,
    * RN-037/RN-042 when querying availability).
