@@ -38,6 +38,24 @@ export const BUSINESS_RULES = {
   TABLE_OPERATIONAL: 'RN-047',
 } as const;
 
+/**
+ * Business rules referenced by their identifiers in HU-006 (availability
+ * query). RN-038/RN-041 (only AVAILABLE tables), RN-039 (capacity) and RN-040
+ * (no schedule conflict) are enforced in `TableAvailabilityService`.
+ */
+export const AVAILABILITY_RULES = {
+  /** RN-036: the number of people must be greater than zero. */
+  POSITIVE_GUESTS: 'RN-036',
+  /** RN-037 / RN-042: past dates or times cannot be queried. */
+  NO_PAST_DATE_TIME: 'RN-037 / RN-042',
+  /** RN-038 / RN-041: only AVAILABLE tables; OUT_OF_SERVICE are discarded. */
+  ONLY_AVAILABLE_TABLES: 'RN-038 / RN-041',
+  /** RN-039: table capacity must be greater than or equal to the guests. */
+  CAPACITY: 'RN-039',
+  /** RN-040: tables with a conflicting reservation are not available. */
+  NO_SCHEDULE_CONFLICT: 'RN-040',
+} as const;
+
 /** Column length limits kept in sync with the entity definition. */
 export const RESERVATION_FIELD_LIMITS = {
   customerName: 150,

@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -59,22 +59,22 @@ export class ReservationQueryDto {
 
 /** Query accepted by `GET /api/v1/reservations/availability`. */
 export class AvailabilityQueryDto {
-  @ApiPropertyOptional({
-    description: 'Reservation day, formatted as YYYY-MM-DD',
+  @ApiProperty({
+    description: 'Reservation day, formatted as YYYY-MM-DD (required)',
     example: '2026-09-20',
   })
   @IsReservationDate()
   date: string;
 
-  @ApiPropertyOptional({
-    description: 'Reservation start time, 24 hour clock',
+  @ApiProperty({
+    description: 'Reservation start time, 24 hour clock (required)',
     example: '19:00',
   })
   @IsReservationTime()
   time: string;
 
-  @ApiPropertyOptional({
-    description: 'Number of people, must be greater than zero',
+  @ApiProperty({
+    description: 'Number of people, must be greater than zero (required)',
     example: 4,
     minimum: 1,
   })

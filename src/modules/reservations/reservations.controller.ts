@@ -23,6 +23,7 @@ import {
   AvailabilityQueryDto,
   ReservationQueryDto,
 } from './dto/reservation-query.dto.js';
+import { AvailabilityResponseDto } from './dto/availability-response.dto.js';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { UpdateReservationDto } from './dto/update-reservation.dto.js';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto.js';
@@ -32,9 +33,9 @@ import { ReservationsService } from './reservations.service.js';
 /**
  * Reservation endpoints, exposed under the global `api/v1` prefix.
  *
- * The single endpoint required by HU-007 is `POST /api/v1/reservations`; the
- * reads and the status transition exist so the reservation lifecycle the story
- * describes can actually be exercised.
+ * HU-007 requires `POST /api/v1/reservations`; HU-006 requires
+ * `GET /api/v1/reservations/availability`. The reads and the status transition
+ * exist so the reservation lifecycle the stories describe can be exercised.
  */
 @ApiTags('reservations')
 @Controller('reservations')
@@ -77,13 +78,25 @@ export class ReservationsController {
 
   @Get('availability')
   @ApiOperation({
-    summary: 'Check table availability for a slot',
+    summary: 'Check table availability for a date, time and party size',
     description:
-      'Read-only lookup used to show a customer what can be booked before ' +
-      'submitting the reservation.',
+      'Read-only lookup that lists the tables a customer could book. Only ' +
+      'AVAILABLE tables (RN-038/RN-041) with capacity greater than or equal ' +
+      'to the guests (RN-039) and no overlapping reservation (RN-040) are ' +
+      'returned. Guests must be greater than zero (RN-036) and the date/time ' +
+      'must be in the future (RN-037/RN-042). When nothing is free the answer ' +
+      'is still 200 with `available: false`, a `reason` and a `message`.',
   })
-  @ApiOkResponse({ description: 'Availability result for the requested slot.' })
-  @ApiBadRequestResponse({ description: 'Invalid or past date/time.' })
+  @ApiOkResponse({
+    description:
+      'Availability result for the requested slot, with the free tables.',
+    type: AvailabilityResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Missing or malformed date, time or guests; guests below one; or a ' +
+      'past date/time.',
+  })
   checkAvailability(@Query() query: AvailabilityQueryDto) {
     return this.reservationsService.checkAvailability(query);
   }
