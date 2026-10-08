@@ -457,7 +457,7 @@ describe('ReservationsService', () => {
         table: table(1, 4),
       });
       reservationRepository.findOneBy.mockResolvedValue(stored);
-      
+
       availability.search.mockResolvedValue({
         table: table(2, 8),
         reason: 'AVAILABLE',
@@ -487,7 +487,7 @@ describe('ReservationsService', () => {
         table: table(1, 4),
       });
       reservationRepository.findOneBy.mockResolvedValue(stored);
-      
+
       availability.search.mockResolvedValue({
         table: null,
         reason: 'NO_CAPACITY',
