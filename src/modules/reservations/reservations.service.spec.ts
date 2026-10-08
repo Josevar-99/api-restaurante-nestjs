@@ -66,7 +66,11 @@ describe('ReservationsService', () => {
     findOneBy: jest.Mock;
     save: jest.Mock;
   };
-  let availability: { search: jest.Mock; hasEnoughCapacity: jest.Mock };
+  let availability: {
+    search: jest.Mock;
+    findAvailable: jest.Mock;
+    hasEnoughCapacity: jest.Mock;
+  };
   let transactionManager: {
     create: jest.Mock;
     save: jest.Mock;
@@ -96,6 +100,11 @@ describe('ReservationsService', () => {
     availability = {
       search: jest.fn().mockResolvedValue({
         table: table(1, 6),
+        reason: 'AVAILABLE',
+        tablesWithConflict: [],
+      }),
+      findAvailable: jest.fn().mockResolvedValue({
+        tables: [table(1, 6)],
         reason: 'AVAILABLE',
         tablesWithConflict: [],
       }),
@@ -546,8 +555,14 @@ describe('ReservationsService', () => {
     });
   });
 
-  describe('checkAvailability', () => {
-    it('reports the table that would be assigned', async () => {
+  describe('checkAvailability (HU-006)', () => {
+    it('lists the tables that can be booked', async () => {
+      availability.findAvailable.mockResolvedValue({
+        tables: [table(1, 6), table(2, 8)],
+        reason: 'AVAILABLE',
+        tablesWithConflict: [],
+      });
+
       const result = await service.checkAvailability({
         date: FUTURE_DATE,
         time: '19:00',
@@ -555,17 +570,22 @@ describe('ReservationsService', () => {
       });
 
       expect(result.available).toBe(true);
-      expect(result.table).toEqual({
-        id: 1,
-        tableNumber: 1,
-        capacity: 6,
-        zone: 'INDOOR',
+      expect(result.reason).toBe('AVAILABLE');
+      expect(result.tables).toEqual([
+        { id: 1, tableNumber: 1, capacity: 6, zone: 'INDOOR' },
+        { id: 2, tableNumber: 2, capacity: 8, zone: 'INDOOR' },
+      ]);
+      expect(availability.findAvailable).toHaveBeenCalledWith({
+        guests: 4,
+        date: FUTURE_DATE,
+        time: '19:00',
+        durationMinutes: DEFAULT_DURATION_MINUTES,
       });
     });
 
     it('explains why nothing is free', async () => {
-      availability.search.mockResolvedValue({
-        table: null,
+      availability.findAvailable.mockResolvedValue({
+        tables: [],
         reason: 'SCHEDULE_CONFLICT',
         tablesWithConflict: [1],
       });
@@ -578,17 +598,35 @@ describe('ReservationsService', () => {
 
       expect(result.available).toBe(false);
       expect(result.reason).toBe('SCHEDULE_CONFLICT');
+      expect(result.tables).toEqual([]);
       expect(result.message).toMatch(/No table is free/);
     });
 
-    it('rejects a past slot', async () => {
-      await expect(
+    it('rejects a past slot without querying tables', async () => {
+      const error = await rejectionOf<BadRequestException>(
         service.checkAvailability({
           date: PAST_DATE,
           time: '19:00',
           guests: 2,
         }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      );
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.getResponse()).toMatchObject({ rule: 'RN-037 / RN-042' });
+      expect(availability.findAvailable).not.toHaveBeenCalled();
+    });
+
+    it('rejects guests below one without querying tables', async () => {
+      const error = await rejectionOf<BadRequestException>(
+        service.checkAvailability({
+          date: FUTURE_DATE,
+          time: '19:00',
+          guests: 0,
+        }),
+      );
+
+      expect(error.getResponse()).toMatchObject({ rule: 'RN-036' });
+      expect(availability.findAvailable).not.toHaveBeenCalled();
     });
   });
 
