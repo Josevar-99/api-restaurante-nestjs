@@ -8,7 +8,7 @@ and time so that I can secure an available table before coming to the
 restaurant.
 
 This module implements the reservation registration flow described in HU-007.
-It lives entirely in `src/reservations` and **does not modify any other
+It lives entirely in `src/modules/reservations` and **does not modify any other
 module**.
 
 ---

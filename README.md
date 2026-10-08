@@ -14,7 +14,7 @@ Autor: Jose Vargas
 
 ## Requisitos previos
 
-- Node.js 20+
+- Node.js 24+
 - Docker y Docker Compose
 
 ## Instalación
@@ -58,7 +58,8 @@ npm run start:dev
 - `npm run start:dev` — modo desarrollo con recarga automática
 - `npm run build` — compila el proyecto
 - `npm run lint` — corre oxlint
-- `npm run test` — corre pruebas con Vitest
+- `npm test` — corre pruebas unitarias con Jest
+- `npm run test:e2e` — corre pruebas e2e con Jest
 - `npm run format` — formatea con Prettier
 
 ## Estructura del proyecto

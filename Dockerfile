@@ -1,5 +1,4 @@
-# 1. Etapa de compilación (Builder) usando Node 22 para compatibilidad de paquetes
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -10,8 +9,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# 2. Etapa de producción usando también Node 22 para evitar fallos de EBADENGINE
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 
 WORKDIR /app
 

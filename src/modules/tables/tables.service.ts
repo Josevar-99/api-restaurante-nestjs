@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, MoreThanOrEqual, Repository } from 'typeorm';
-import { TableEntity } from '../entities/table.entity.js';
-import type { CreateTableDto } from '../dtos/create-table.dto.js';
-import type { UpdateTableDto } from '../dtos/update-table.dto.js';
-import type { FilterTablesDto } from '../dtos/filter-tables.dto.js';
-import type { TableStatus } from '../constants/table.constants.js';
+import { TableEntity } from './entities/table.entity.js';
+import type { CreateTableDto } from './dto/create-table.dto.js';
+import type { UpdateTableDto } from './dto/update-table.dto.js';
+import type { FilterTablesDto } from './dto/filter-tables.dto.js';
+import type { TableStatus } from './constants/table.constants.js';
 
 @Injectable()
 export class TablesService {

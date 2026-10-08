@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository } from 'typeorm';
-import { TableEntity } from '../entities/table.entity.js';
+import { TableEntity } from '../tables/entities/table.entity.js';
 import { DEFAULT_DURATION_MINUTES } from './reservation.constants.js';
 import { BLOCKING_RESERVATION_STATUSES } from './reservation-status.enum.js';
 import { Reservation } from './entities/reservation.entity.js';
