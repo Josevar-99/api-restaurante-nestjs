@@ -32,6 +32,16 @@ export interface AvailabilitySearchResult {
   tablesWithConflict: number[];
 }
 
+/** Result of listing every table that can be booked for a slot. */
+export interface AvailableTablesResult {
+  /** Free tables, smallest capacity first (best fit first). */
+  tables: TableEntity[];
+  /** `AVAILABLE` when `tables` is not empty, otherwise the blocking reason. */
+  reason: UnavailableReason;
+  /** Ids of tables that fit but are already booked for that window. */
+  tablesWithConflict: number[];
+}
+
 /** Options that control how the search is executed. */
 export interface TableSearchOptions {
   /**
@@ -44,6 +54,13 @@ export interface TableSearchOptions {
    * requests cannot pick the same table (RN-045). Requires an open transaction.
    */
   lockRows?: boolean;
+}
+
+/** Internal outcome shared by `search` and `findAvailable`. */
+interface Evaluation {
+  free: TableEntity[];
+  reason: UnavailableReason;
+  tablesWithConflict: number[];
 }
 
 /**
@@ -77,6 +94,40 @@ export class TableAvailabilityService {
     criteria: TableSearchCriteria,
     options: TableSearchOptions = {},
   ): Promise<AvailabilitySearchResult> {
+    const { free, reason, tablesWithConflict } = await this.evaluate(
+      criteria,
+      options,
+    );
+
+    return { table: free[0] ?? null, reason, tablesWithConflict };
+  }
+
+  /**
+   * Lists every table that can be booked for the slot (HU-006).
+   *
+   * Only tables that are `AVAILABLE` (RN-038/RN-041), seat the party (RN-039)
+   * and have no overlapping reservation (RN-040) are returned. It never locks
+   * rows: it is a read-only lookup.
+   */
+  async findAvailable(
+    criteria: TableSearchCriteria,
+  ): Promise<AvailableTablesResult> {
+    const { free, reason, tablesWithConflict } = await this.evaluate(
+      criteria,
+      {},
+    );
+
+    return { tables: free, reason, tablesWithConflict };
+  }
+
+  /**
+   * Shared query: operational tables with enough seats, minus the ones that
+   * already have an overlapping reservation.
+   */
+  private async evaluate(
+    criteria: TableSearchCriteria,
+    options: TableSearchOptions,
+  ): Promise<Evaluation> {
     const { guests, date, time } = criteria;
     const durationMinutes =
       criteria.durationMinutes ?? DEFAULT_DURATION_MINUTES;
@@ -84,10 +135,11 @@ export class TableAvailabilityService {
 
     const query = tables
       .createQueryBuilder('t')
-      // RN-044: enough seats.
+      // RN-044 / RN-039: enough seats.
       .where('t.capacity >= :guests', { guests })
-      // RN-047: the table must be operational. AVAILABLE is the only bookable
-      // state; OCCUPIED is reserved for walk-ins and OUT_OF_SERVICE is broken.
+      // RN-047 / RN-038 / RN-041: the table must be operational. AVAILABLE is
+      // the only bookable state; OCCUPIED is reserved for walk-ins and
+      // OUT_OF_SERVICE is broken.
       .andWhere('t.status = :status', { status: 'AVAILABLE' })
       .orderBy('t.capacity', 'ASC')
       .addOrderBy('t.id', 'ASC');
@@ -100,7 +152,8 @@ export class TableAvailabilityService {
 
     if (candidates.length === 0) {
       return {
-        ...(await this.explainEmpty(tables, guests)),
+        free: [],
+        reason: await this.explainEmpty(tables, guests),
         tablesWithConflict: [],
       };
     }
@@ -111,14 +164,14 @@ export class TableAvailabilityService {
       options.manager,
     );
 
-    const free = candidates.find((table) => !busyTableIds.has(table.id));
+    const free = candidates.filter((table) => !busyTableIds.has(table.id));
 
-    if (free) {
-      return { table: free, reason: 'AVAILABLE', tablesWithConflict: [] };
+    if (free.length > 0) {
+      return { free, reason: 'AVAILABLE', tablesWithConflict: [] };
     }
 
     return {
-      table: null,
+      free: [],
       reason: 'SCHEDULE_CONFLICT',
       tablesWithConflict: candidates.map((table) => table.id),
     };
@@ -131,21 +184,18 @@ export class TableAvailabilityService {
   private async explainEmpty(
     tables: Repository<TableEntity>,
     guests: number,
-  ): Promise<Omit<AvailabilitySearchResult, 'tablesWithConflict'>> {
+  ): Promise<'NO_CAPACITY' | 'NO_OPERATIONAL_TABLE'> {
     const bigEnoughExists = await tables
       .createQueryBuilder('t')
       .where('t.capacity >= :guests', { guests })
       .getExists();
 
-    return {
-      table: null,
-      reason: bigEnoughExists ? 'NO_OPERATIONAL_TABLE' : 'NO_CAPACITY',
-    };
+    return bigEnoughExists ? 'NO_OPERATIONAL_TABLE' : 'NO_CAPACITY';
   }
 
   /**
    * Returns the ids of candidate tables whose schedule already overlaps the
-   * requested window (RN-045).
+   * requested window (RN-045 / RN-040).
    */
   private async findTablesWithConflict(
     tableIds: number[],
@@ -176,7 +226,8 @@ export class TableAvailabilityService {
     for (const reservation of sameDay) {
       const existing = buildWindow(
         reservation.date,
-        reservation.time,
+        // PostgreSQL returns `time` columns as HH:mm:ss; the helpers expect HH:mm.
+        reservation.time.slice(0, 5),
         reservation.durationMinutes,
       );
       if (

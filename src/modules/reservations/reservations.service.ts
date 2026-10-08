@@ -15,8 +15,10 @@ import {
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { UpdateReservationDto } from './dto/update-reservation.dto.js';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto.js';
+import { AvailabilityResponseDto } from './dto/availability-response.dto.js';
 import { Reservation } from './entities/reservation.entity.js';
 import {
+  AVAILABILITY_RULES,
   BUSINESS_RULES,
   DEFAULT_DURATION_MINUTES,
 } from './reservation.constants.js';
@@ -51,6 +53,10 @@ const AVAILABILITY_MESSAGES: Record<UnavailableReason, string | undefined> = {
  * RN-042 past date/time, RN-043 positive guests, RN-044 sufficient capacity,
  * RN-045 no schedule conflict, RN-046 initial PENDING status and RN-047 the
  * assigned table must be operational.
+ *
+ * The availability query (HU-006) applies RN-036 (positive guests) and
+ * RN-037/RN-042 (no past date/time) here, and RN-038 to RN-041 in
+ * `TableAvailabilityService`.
  */
 @Injectable()
 export class ReservationsService {
@@ -210,89 +216,113 @@ export class ReservationsService {
   }
 
   /**
-   * Read-only availability lookup for a slot, used by the front end and by
-   * HU-006 to show the customer what can be booked before submitting.
+   * Read-only availability lookup for a slot (HU-006).
+   *
+   * Lists every table that is operational, seats the party and has no
+   * overlapping reservation. When nothing can be offered it still answers 200
+   * with `available: false`, a `reason` and a clear `message`, because "no
+   * availability" is a valid answer to the question, not an error.
    */
   async checkAvailability(query: {
     date: string;
     time: string;
     guests: number;
     durationMinutes?: number;
-  }) {
-    this.assertNotInThePast(query.date, query.time);
-    this.assertGuestsWithinLimits(query.guests);
+  }): Promise<AvailabilityResponseDto> {
+    this.assertNotInThePast(
+      query.date,
+      query.time,
+      AVAILABILITY_RULES.NO_PAST_DATE_TIME,
+    );
+    this.assertGuestsWithinLimits(
+      query.guests,
+      AVAILABILITY_RULES.POSITIVE_GUESTS,
+    );
 
-    const { table, reason, tablesWithConflict } =
-      await this.availability.search({
-        guests: query.guests,
-        date: query.date,
-        time: query.time,
-        durationMinutes: query.durationMinutes ?? DEFAULT_DURATION_MINUTES,
-      });
+    const durationMinutes = query.durationMinutes ?? DEFAULT_DURATION_MINUTES;
+
+    const { tables, reason } = await this.availability.findAvailable({
+      guests: query.guests,
+      date: query.date,
+      time: query.time,
+      durationMinutes,
+    });
+
+    const available = tables.length > 0;
 
     return {
-      available: table !== null,
+      available,
       reason,
-      table: table
-        ? {
-            id: table.id,
-            tableNumber: table.tableNumber,
-            capacity: table.capacity,
-            zone: table.zone,
-          }
-        : null,
-      message: table
-        ? 'A table is available'
+      message: available
+        ? 'Tables are available for the requested slot'
         : (AVAILABILITY_MESSAGES[reason] ?? 'No table is available'),
-      tablesWithConflict,
+      date: query.date,
+      time: query.time,
+      guests: query.guests,
+      durationMinutes,
+      tables: tables.map(({ id, tableNumber, capacity, zone }) => ({
+        id,
+        tableNumber,
+        capacity,
+        zone,
+      })),
     };
   }
 
   /** End instant of a reservation, useful for clients rendering the slot. */
   endsAt(reservation: Reservation): Date {
     return addMinutes(
-      combineDateAndTime(reservation.date, reservation.time),
+      // PostgreSQL returns `time` columns as HH:mm:ss; the helpers expect HH:mm.
+      combineDateAndTime(reservation.date, reservation.time.slice(0, 5)),
       reservation.durationMinutes,
     );
   }
-
   /**
-   * RN-042: rejects a date/time that has already passed.
+   * Rejects a date/time that has already passed (RN-042 when booking,
+   * RN-037/RN-042 when querying availability).
    *
    * A few minutes of tolerance is not granted: the instant is compared against
    * the current time, so booking for "now" is only valid while that minute has
    * not elapsed.
    */
-  private assertNotInThePast(date: string, time: string): void {
-    const startsAt = this.startOf(date, time);
+  private assertNotInThePast(
+    date: string,
+    time: string,
+    rule: string = BUSINESS_RULES.NO_PAST_DATE_TIME,
+  ): void {
+    const startsAt = this.startOf(date, time, rule);
 
     if (startsAt.getTime() <= Date.now()) {
       throw new BadRequestException({
         error: `Reservations cannot be registered for a past date or time (requested ${date} ${time})`,
-        rule: BUSINESS_RULES.NO_PAST_DATE_TIME,
+        rule,
       });
     }
   }
 
   /**
-   * RN-043: the party size must be a whole number greater than zero.
+   * The party size must be a whole number greater than zero (RN-043 when
+   * booking, RN-036 when querying availability).
    */
-  private assertGuestsWithinLimits(guests: number): void {
+  private assertGuestsWithinLimits(
+    guests: number,
+    rule: string = BUSINESS_RULES.POSITIVE_GUESTS,
+  ): void {
     if (!Number.isInteger(guests) || guests <= 0) {
       throw new BadRequestException({
         error: 'The number of people must be an integer greater than zero',
-        rule: BUSINESS_RULES.POSITIVE_GUESTS,
+        rule,
       });
     }
   }
 
-  private startOf(date: string, time: string): Date {
+  private startOf(date: string, time: string, rule: string): Date {
     try {
       return combineDateAndTime(date, time);
     } catch (error) {
       throw new BadRequestException({
         error: (error as Error).message,
-        rule: BUSINESS_RULES.NO_PAST_DATE_TIME,
+        rule,
       });
     }
   }
