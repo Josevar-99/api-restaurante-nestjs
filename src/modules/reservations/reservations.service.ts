@@ -15,8 +15,10 @@ import {
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { UpdateReservationDto } from './dto/update-reservation.dto.js';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto.js';
+import { AvailabilityResponseDto } from './dto/availability-response.dto.js';
 import { Reservation } from './entities/reservation.entity.js';
 import {
+  AVAILABILITY_RULES,
   BUSINESS_RULES,
   DEFAULT_DURATION_MINUTES,
 } from './reservation.constants.js';
@@ -51,6 +53,10 @@ const AVAILABILITY_MESSAGES: Record<UnavailableReason, string | undefined> = {
  * RN-042 past date/time, RN-043 positive guests, RN-044 sufficient capacity,
  * RN-045 no schedule conflict, RN-046 initial PENDING status and RN-047 the
  * assigned table must be operational.
+ *
+ * The availability query (HU-006) applies RN-036 (positive guests) and
+ * RN-037/RN-042 (no past date/time) here, and RN-038 to RN-041 in
+ * `TableAvailabilityService`.
  */
 @Injectable()
 export class ReservationsService {
@@ -142,45 +148,107 @@ export class ReservationsService {
   }
 
   /**
-   * Updates customer details. `date`, `time` and `tableId` are immutable here
-   * (see `UpdateReservationDto`); a customer that needs another slot cancels
-   * and books again.
+   * Updates an existing reservation.
+   * If date, time, or guests change, it re-validates table availability (RN-055).
+   * It maintains the current table if conditions are met, or reassigns a new one (RN-056).
+   * Rejects updates if the reservation is in CANCELLED, NO_SHOW, or COMPLETED status (RN-057).
    */
   async update(id: string, dto: UpdateReservationDto): Promise<Reservation> {
     const reservation = await this.findOne(id);
 
+    // RN-057: System rejects any attempt to modify if it's in a terminal state
+    const terminalStatuses = [
+      ReservationStatus.CANCELLED,
+      ReservationStatus.NO_SHOW,
+      ReservationStatus.COMPLETED,
+    ];
+    if (terminalStatuses.includes(reservation.status)) {
+      throw new ConflictException({
+        error: `Cannot modify a reservation that is already ${reservation.status} (RN-057).`,
+        rule: 'RN-057',
+      });
+    }
+
+    // RN-054: Validate that the number of guests is valid if provided
     if (dto.guests !== undefined) {
       this.assertGuestsWithinLimits(dto.guests);
-      // RN-044/RN-047 still hold for the already assigned table.
-      const table = reservation.table;
-      if (table && !this.availability.hasEnoughCapacity(table, dto.guests)) {
+    }
+
+    // Determine new target values (or keep current ones if not provided in DTO)
+    const nextDate = dto.date ?? reservation.date;
+    const nextTime = dto.time ?? reservation.time;
+    const nextGuests = dto.guests ?? reservation.guests;
+
+    // RN-053: If date or time are provided, the new date/time must be in the future
+    if (dto.date !== undefined || dto.time !== undefined) {
+      this.assertNotInThePast(nextDate, nextTime);
+    }
+
+    // RN-055: Evaluate if there's a change that requires triggering availability re-validation logic
+    const hasSchedulingChange =
+      (dto.date !== undefined && dto.date !== reservation.date) ||
+      (dto.time !== undefined && dto.time !== reservation.time) ||
+      (dto.guests !== undefined && dto.guests !== reservation.guests);
+
+    // Prepare object with common partial contact data
+    const patch: Partial<Reservation> = {};
+    if (dto.customerName !== undefined)
+      patch.customerName = dto.customerName.trim();
+    if (dto.phone !== undefined) patch.phone = dto.phone.trim();
+    if (dto.email !== undefined) patch.email = dto.email.trim().toLowerCase();
+
+    // If there are NO scheduling or capacity changes, simply apply contact data and save
+    if (!hasSchedulingChange) {
+      Object.assign(reservation, patch);
+      if (dto.guests !== undefined) {
+        // If they sent the same number of guests, we just ensure it still fits in the current table
+        const table = reservation.table;
+        if (table && !this.availability.hasEnoughCapacity(table, dto.guests)) {
+          throw new ConflictException({
+            error: `Table ${table.tableNumber} seats ${table.capacity} people and cannot host ${dto.guests}`,
+            rule: BUSINESS_RULES.CAPACITY_AVAILABLE,
+          });
+        }
+        reservation.guests = dto.guests;
+      }
+      return this.reservationRepository.save(reservation);
+    }
+
+    // If there ARE changes in date, time, or guests, execute re-validation under a transaction
+    return this.reservationRepository.manager.transaction(async (manager) => {
+      const durationMinutes = reservation.durationMinutes;
+
+      // Search for availability under new conditions (RN-055 / RN-056)
+      const { table, reason } = await this.availability.search(
+        {
+          guests: nextGuests,
+          date: nextDate,
+          time: nextTime,
+          durationMinutes,
+        },
+        { manager, lockRows: true },
+      );
+
+      if (!table) {
         throw new ConflictException({
-          error: `Table ${table.tableNumber} seats ${table.capacity} people and cannot host ${dto.guests}`,
-          rule: BUSINESS_RULES.CAPACITY_AVAILABLE,
+          error:
+            AVAILABILITY_MESSAGES[reason] ??
+            'No table is available for the requested modification',
+          rule: this.ruleFor(reason) ?? 'RN-058',
+          reason,
         });
       }
-    }
 
-    // Normalise the incoming values once, then apply only what was sent so an
-    // omitted field keeps its stored value.
-    const patch: Partial<Reservation> = {};
+      // Apply validated changes to the reservation record
+      Object.assign(reservation, patch);
+      reservation.date = nextDate;
+      reservation.time = nextTime;
+      reservation.guests = nextGuests;
+      reservation.tableId = table.id;
+      reservation.table = table; // Sync the loaded entity in memory
 
-    if (dto.customerName !== undefined) {
-      patch.customerName = dto.customerName.trim();
-    }
-    if (dto.phone !== undefined) {
-      patch.phone = dto.phone.trim();
-    }
-    if (dto.email !== undefined) {
-      patch.email = dto.email.trim().toLowerCase();
-    }
-    if (dto.guests !== undefined) {
-      patch.guests = dto.guests;
-    }
-
-    Object.assign(reservation, patch);
-
-    return this.reservationRepository.save(reservation);
+      return manager.save(Reservation, reservation);
+    });
   }
 
   /**
@@ -210,89 +278,113 @@ export class ReservationsService {
   }
 
   /**
-   * Read-only availability lookup for a slot, used by the front end and by
-   * HU-006 to show the customer what can be booked before submitting.
+   * Read-only availability lookup for a slot (HU-006).
+   *
+   * Lists every table that is operational, seats the party and has no
+   * overlapping reservation. When nothing can be offered it still answers 200
+   * with `available: false`, a `reason` and a clear `message`, because "no
+   * availability" is a valid answer to the question, not an error.
    */
   async checkAvailability(query: {
     date: string;
     time: string;
     guests: number;
     durationMinutes?: number;
-  }) {
-    this.assertNotInThePast(query.date, query.time);
-    this.assertGuestsWithinLimits(query.guests);
+  }): Promise<AvailabilityResponseDto> {
+    this.assertNotInThePast(
+      query.date,
+      query.time,
+      AVAILABILITY_RULES.NO_PAST_DATE_TIME,
+    );
+    this.assertGuestsWithinLimits(
+      query.guests,
+      AVAILABILITY_RULES.POSITIVE_GUESTS,
+    );
 
-    const { table, reason, tablesWithConflict } =
-      await this.availability.search({
-        guests: query.guests,
-        date: query.date,
-        time: query.time,
-        durationMinutes: query.durationMinutes ?? DEFAULT_DURATION_MINUTES,
-      });
+    const durationMinutes = query.durationMinutes ?? DEFAULT_DURATION_MINUTES;
+
+    const { tables, reason } = await this.availability.findAvailable({
+      guests: query.guests,
+      date: query.date,
+      time: query.time,
+      durationMinutes,
+    });
+
+    const available = tables.length > 0;
 
     return {
-      available: table !== null,
+      available,
       reason,
-      table: table
-        ? {
-            id: table.id,
-            tableNumber: table.tableNumber,
-            capacity: table.capacity,
-            zone: table.zone,
-          }
-        : null,
-      message: table
-        ? 'A table is available'
+      message: available
+        ? 'Tables are available for the requested slot'
         : (AVAILABILITY_MESSAGES[reason] ?? 'No table is available'),
-      tablesWithConflict,
+      date: query.date,
+      time: query.time,
+      guests: query.guests,
+      durationMinutes,
+      tables: tables.map(({ id, tableNumber, capacity, zone }) => ({
+        id,
+        tableNumber,
+        capacity,
+        zone,
+      })),
     };
   }
 
   /** End instant of a reservation, useful for clients rendering the slot. */
   endsAt(reservation: Reservation): Date {
     return addMinutes(
-      combineDateAndTime(reservation.date, reservation.time),
+      // PostgreSQL returns `time` columns as HH:mm:ss; the helpers expect HH:mm.
+      combineDateAndTime(reservation.date, reservation.time.slice(0, 5)),
       reservation.durationMinutes,
     );
   }
-
   /**
-   * RN-042: rejects a date/time that has already passed.
+   * Rejects a date/time that has already passed (RN-042 when booking,
+   * RN-037/RN-042 when querying availability).
    *
    * A few minutes of tolerance is not granted: the instant is compared against
    * the current time, so booking for "now" is only valid while that minute has
    * not elapsed.
    */
-  private assertNotInThePast(date: string, time: string): void {
-    const startsAt = this.startOf(date, time);
+  private assertNotInThePast(
+    date: string,
+    time: string,
+    rule: string = BUSINESS_RULES.NO_PAST_DATE_TIME,
+  ): void {
+    const startsAt = this.startOf(date, time, rule);
 
     if (startsAt.getTime() <= Date.now()) {
       throw new BadRequestException({
         error: `Reservations cannot be registered for a past date or time (requested ${date} ${time})`,
-        rule: BUSINESS_RULES.NO_PAST_DATE_TIME,
+        rule,
       });
     }
   }
 
   /**
-   * RN-043: the party size must be a whole number greater than zero.
+   * The party size must be a whole number greater than zero (RN-043 when
+   * booking, RN-036 when querying availability).
    */
-  private assertGuestsWithinLimits(guests: number): void {
+  private assertGuestsWithinLimits(
+    guests: number,
+    rule: string = BUSINESS_RULES.POSITIVE_GUESTS,
+  ): void {
     if (!Number.isInteger(guests) || guests <= 0) {
       throw new BadRequestException({
         error: 'The number of people must be an integer greater than zero',
-        rule: BUSINESS_RULES.POSITIVE_GUESTS,
+        rule,
       });
     }
   }
 
-  private startOf(date: string, time: string): Date {
+  private startOf(date: string, time: string, rule: string): Date {
     try {
       return combineDateAndTime(date, time);
     } catch (error) {
       throw new BadRequestException({
         error: (error as Error).message,
-        rule: BUSINESS_RULES.NO_PAST_DATE_TIME,
+        rule,
       });
     }
   }
@@ -310,24 +402,15 @@ export class ReservationsService {
     }
   }
 
+  // Cancel a reservation, changing its status to CANCELLED and setting the cancelledAt timestamp.
   async cancelReservation(id: string): Promise<Reservation> {
-    const reservation = await this.reservationRepository.findOneBy({ id });
-
-    if (!reservation) {
-      throw new NotFoundException(`Reservation with id "${id}" was not found`);
-    }
-
-    if (reservation.status === ReservationStatus.CANCELLED) {
-      throw new ConflictException({
-        error: `Reservation with id "${id}" is already cancelled`,
-        from: reservation.status,
-      });
-    }
+    const reservation = await this.findOne(id);
 
     if (
       reservation.status === ReservationStatus.COMPLETED ||
       reservation.status === ReservationStatus.CHECKED_IN ||
-      reservation.status === ReservationStatus.NO_SHOW
+      reservation.status === ReservationStatus.NO_SHOW ||
+      reservation.status === ReservationStatus.CANCELLED
     ) {
       throw new ConflictException({
         error: `Reservation with id "${id}" cannot be cancelled as it is already ${reservation.status}`,
@@ -338,6 +421,30 @@ export class ReservationsService {
     reservation.status = ReservationStatus.CANCELLED;
     const cancelled = new Date();
     reservation.cancelledAt = cancelled;
+
+    return this.reservationRepository.save(reservation);
+  }
+
+  // Confirm a reservation, changing its status to CONFIRMED and setting the confirmedAt timestamp.
+  async confirmReservation(id: string): Promise<Reservation> {
+    const reservation = await this.findOne(id);
+
+    if (
+      reservation.status === ReservationStatus.CANCELLED ||
+      reservation.status === ReservationStatus.CHECKED_IN ||
+      reservation.status === ReservationStatus.NO_SHOW ||
+      reservation.status === ReservationStatus.COMPLETED ||
+      reservation.status === ReservationStatus.CONFIRMED
+    ) {
+      throw new ConflictException({
+        error: `Reservation with id "${id}" cannot be confirmed as it is already ${reservation.status}`,
+        from: reservation.status,
+      });
+    }
+
+    reservation.status = ReservationStatus.CONFIRMED;
+    const confirmed = new Date();
+    reservation.confirmedAt = confirmed;
 
     return this.reservationRepository.save(reservation);
   }

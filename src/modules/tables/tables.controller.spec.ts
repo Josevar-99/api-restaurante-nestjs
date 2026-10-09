@@ -35,7 +35,7 @@ describe('TablesController', () => {
   });
 
   it('create() delega en el servicio con el DTO', async () => {
-    const dto = { tableNumber: 4, capacity: 6, zone: 'TERRACE' } as const;
+    const dto = { tableNumber: 4, capacity: 6, zone: 'OUTDOOR' } as const;
     await controller.create(dto);
     expect(service.create).toHaveBeenCalledWith(dto);
   });
