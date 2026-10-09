@@ -400,20 +400,40 @@ describe('ReservationsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('returns the reservation when it exists', async () => {
-      const stored = { id: 'abc' } as Reservation;
-      reservationRepository.findOneBy.mockResolvedValue(stored);
+ describe('findOne', () => {
+  it('returns the reservation when it exists', async () => {
+    const stored = { id: 'abc' } as Reservation;
+    reservationRepository.findOneBy.mockResolvedValue(stored);
 
-      await expect(service.findOne('abc')).resolves.toBe(stored);
-    });
-
-    it('throws 404 for an unknown id', async () => {
-      await expect(service.findOne('missing')).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
-    });
+    await expect(service.findOne('abc')).resolves.toBe(stored);
   });
+
+  it('returns the reservation with its assigned table', async () => {
+    const stored = Object.assign(new Reservation(), {
+      id: '11111111-1111-4111-8111-111111111111',
+      customerName: 'Carlos Pérez',
+      date: FUTURE_DATE,
+      time: '19:00',
+      guests: 4,
+      tableId: 3,
+      table: table(3, 6),
+      status: ReservationStatus.CONFIRMED,
+    });
+
+    reservationRepository.findOneBy.mockResolvedValue(stored);
+
+    const result = await service.findOne(stored.id);
+
+    expect(result).toBe(stored);
+    expect(result.table).toEqual(stored.table);
+  });
+
+  it('throws 404 for an unknown id', async () => {
+    await expect(service.findOne('missing')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+});
 
   describe('update', () => {
     it('saves the changed customer details', async () => {
