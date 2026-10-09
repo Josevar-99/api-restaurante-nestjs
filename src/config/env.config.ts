@@ -10,4 +10,5 @@
     synchronize: process.env.NODE_ENV === 'development',
   },
   corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? [],
+  observe: {},
 });

@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
-import { ProductsController } from './products.controller';
-import { ProductsService } from './products.service';
+import { ProductsController } from './products.controller.js';
+import { ProductsService } from './products.service.js';
 
 describe('ProductsController', () => {
   let controller: ProductsController;
