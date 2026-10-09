@@ -9,6 +9,7 @@ import {
   IsString,
   Length,
   Matches,
+  IsISO8601,
 } from 'class-validator';
 import { RESERVATION_FIELD_LIMITS } from '../reservation.constants.js';
 
@@ -17,10 +18,8 @@ const PHONE_REGEX = /^\+?\d{7,15}$/;
 /**
  * Payload of `PATCH /api/v1/reservations/:id`.
  *
- * `date`, `time` and `tableId` are intentionally **not** editable: moving a
- * reservation to another slot would require re-running the whole availability
- * and conflict check, which is a separate concern from a customer correcting
- * their contact details. Reschedule by cancelling and creating a new booking.
+ * Updated to allow modifying date, time, and guests.
+ * Modifying these fields triggers automatic availability re-validation (RN-055).
  */
 export class UpdateReservationDto {
   @ApiPropertyOptional({
@@ -63,13 +62,37 @@ export class UpdateReservationDto {
 
   @ApiPropertyOptional({
     description:
-      'Number of people. Must still fit the capacity of the assigned table (RN-044).',
+      'New reservation date (YYYY-MM-DD). Triggers re-validation (RN-055).',
+    example: '2026-10-15',
+  })
+  @IsOptional()
+  @IsISO8601(
+    {},
+    { message: 'date must be a valid ISO8601 date string (YYYY-MM-DD)' },
+  )
+  date?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'New reservation time (HH:mm). Triggers re-validation (RN-055).',
+    example: '19:30',
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: 'time must be in HH:mm 24-hour format',
+  })
+  time?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Number of people. Triggers table capacity and availability re-validation (RN-055).',
     example: 4,
     minimum: 1,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'guests must be an integer' })
-  @IsPositive({ message: 'guests must be greater than zero (RN-043)' })
+  @IsPositive({ message: 'guests must be greater than zero (RN-054)' })
   guests?: number;
 }

@@ -148,45 +148,107 @@ export class ReservationsService {
   }
 
   /**
-   * Updates customer details. `date`, `time` and `tableId` are immutable here
-   * (see `UpdateReservationDto`); a customer that needs another slot cancels
-   * and books again.
+   * Updates an existing reservation.
+   * If date, time, or guests change, it re-validates table availability (RN-055).
+   * It maintains the current table if conditions are met, or reassigns a new one (RN-056).
+   * Rejects updates if the reservation is in CANCELLED, NO_SHOW, or COMPLETED status (RN-057).
    */
   async update(id: string, dto: UpdateReservationDto): Promise<Reservation> {
     const reservation = await this.findOne(id);
 
+    // RN-057: System rejects any attempt to modify if it's in a terminal state
+    const terminalStatuses = [
+      ReservationStatus.CANCELLED,
+      ReservationStatus.NO_SHOW,
+      ReservationStatus.COMPLETED,
+    ];
+    if (terminalStatuses.includes(reservation.status)) {
+      throw new ConflictException({
+        error: `Cannot modify a reservation that is already ${reservation.status} (RN-057).`,
+        rule: 'RN-057',
+      });
+    }
+
+    // RN-054: Validate that the number of guests is valid if provided
     if (dto.guests !== undefined) {
       this.assertGuestsWithinLimits(dto.guests);
-      // RN-044/RN-047 still hold for the already assigned table.
-      const table = reservation.table;
-      if (table && !this.availability.hasEnoughCapacity(table, dto.guests)) {
+    }
+
+    // Determine new target values (or keep current ones if not provided in DTO)
+    const nextDate = dto.date ?? reservation.date;
+    const nextTime = dto.time ?? reservation.time;
+    const nextGuests = dto.guests ?? reservation.guests;
+
+    // RN-053: If date or time are provided, the new date/time must be in the future
+    if (dto.date !== undefined || dto.time !== undefined) {
+      this.assertNotInThePast(nextDate, nextTime);
+    }
+
+    // RN-055: Evaluate if there's a change that requires triggering availability re-validation logic
+    const hasSchedulingChange =
+      (dto.date !== undefined && dto.date !== reservation.date) ||
+      (dto.time !== undefined && dto.time !== reservation.time) ||
+      (dto.guests !== undefined && dto.guests !== reservation.guests);
+
+    // Prepare object with common partial contact data
+    const patch: Partial<Reservation> = {};
+    if (dto.customerName !== undefined)
+      patch.customerName = dto.customerName.trim();
+    if (dto.phone !== undefined) patch.phone = dto.phone.trim();
+    if (dto.email !== undefined) patch.email = dto.email.trim().toLowerCase();
+
+    // If there are NO scheduling or capacity changes, simply apply contact data and save
+    if (!hasSchedulingChange) {
+      Object.assign(reservation, patch);
+      if (dto.guests !== undefined) {
+        // If they sent the same number of guests, we just ensure it still fits in the current table
+        const table = reservation.table;
+        if (table && !this.availability.hasEnoughCapacity(table, dto.guests)) {
+          throw new ConflictException({
+            error: `Table ${table.tableNumber} seats ${table.capacity} people and cannot host ${dto.guests}`,
+            rule: BUSINESS_RULES.CAPACITY_AVAILABLE,
+          });
+        }
+        reservation.guests = dto.guests;
+      }
+      return this.reservationRepository.save(reservation);
+    }
+
+    // If there ARE changes in date, time, or guests, execute re-validation under a transaction
+    return this.reservationRepository.manager.transaction(async (manager) => {
+      const durationMinutes = reservation.durationMinutes;
+
+      // Search for availability under new conditions (RN-055 / RN-056)
+      const { table, reason } = await this.availability.search(
+        {
+          guests: nextGuests,
+          date: nextDate,
+          time: nextTime,
+          durationMinutes,
+        },
+        { manager, lockRows: true },
+      );
+
+      if (!table) {
         throw new ConflictException({
-          error: `Table ${table.tableNumber} seats ${table.capacity} people and cannot host ${dto.guests}`,
-          rule: BUSINESS_RULES.CAPACITY_AVAILABLE,
+          error:
+            AVAILABILITY_MESSAGES[reason] ??
+            'No table is available for the requested modification',
+          rule: this.ruleFor(reason) ?? 'RN-058',
+          reason,
         });
       }
-    }
 
-    // Normalise the incoming values once, then apply only what was sent so an
-    // omitted field keeps its stored value.
-    const patch: Partial<Reservation> = {};
+      // Apply validated changes to the reservation record
+      Object.assign(reservation, patch);
+      reservation.date = nextDate;
+      reservation.time = nextTime;
+      reservation.guests = nextGuests;
+      reservation.tableId = table.id;
+      reservation.table = table; // Sync the loaded entity in memory
 
-    if (dto.customerName !== undefined) {
-      patch.customerName = dto.customerName.trim();
-    }
-    if (dto.phone !== undefined) {
-      patch.phone = dto.phone.trim();
-    }
-    if (dto.email !== undefined) {
-      patch.email = dto.email.trim().toLowerCase();
-    }
-    if (dto.guests !== undefined) {
-      patch.guests = dto.guests;
-    }
-
-    Object.assign(reservation, patch);
-
-    return this.reservationRepository.save(reservation);
+      return manager.save(Reservation, reservation);
+    });
   }
 
   /**
