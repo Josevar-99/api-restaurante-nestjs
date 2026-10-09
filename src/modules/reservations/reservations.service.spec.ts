@@ -455,7 +455,7 @@ describe('ReservationsService', () => {
       );
     });
 
-    it('rejects a party that no longer fits the assigned table', async () => {
+    it('maintains or reassigns a table if guests fit an available table (RN-056)', async () => {
       const stored = Object.assign(new Reservation(), {
         id: 'abc',
         guests: 2,
@@ -466,17 +466,49 @@ describe('ReservationsService', () => {
         table: table(1, 4),
       });
       reservationRepository.findOneBy.mockResolvedValue(stored);
-      availability.hasEnoughCapacity.mockReturnValue(false);
 
-      const dto = Object.assign(new UpdateReservationDto(), { guests: 9 });
+      availability.search.mockResolvedValue({
+        table: table(2, 8),
+        reason: 'AVAILABLE',
+      });
+
+      const dto = Object.assign(new UpdateReservationDto(), { guests: 6 });
+
+      await service.update('abc', dto);
+
+      expect(transactionManager.save).toHaveBeenCalledWith(
+        Reservation,
+        expect.objectContaining({
+          guests: 6,
+          tableId: 2,
+        }),
+      );
+    });
+
+    it('rejects a modification if no tables are available for the new criteria (RN-058)', async () => {
+      const stored = Object.assign(new Reservation(), {
+        id: 'abc',
+        guests: 2,
+        date: FUTURE_DATE,
+        time: '19:00',
+        durationMinutes: 120,
+        status: ReservationStatus.PENDING,
+        table: table(1, 4),
+      });
+      reservationRepository.findOneBy.mockResolvedValue(stored);
+
+      availability.search.mockResolvedValue({
+        table: null,
+        reason: 'NO_CAPACITY',
+      });
+
+      const dto = Object.assign(new UpdateReservationDto(), { guests: 15 });
 
       const error = await rejectionOf<ConflictException>(
         service.update('abc', dto),
       );
 
       expect(error).toBeInstanceOf(ConflictException);
-      expect(error.getResponse()).toMatchObject({ rule: 'RN-044' });
-      expect(reservationRepository.save).not.toHaveBeenCalled();
     });
 
     it('keeps the status untouched', async () => {
