@@ -198,4 +198,23 @@ export class ReservationsController {
   confirmReservation(@Param('id', ParseUUIDPipe) id: string) {
     return this.reservationsService.confirmReservation(id);
   }
+
+  @Patch(':id/check-in')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check in a reservation',
+    description:
+      'Moves a reservation to CHECKED_IN state, if it is currently CONFIRMED.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The provided reservation ID is not a valid UUID.',
+  })
+  @ApiNotFoundResponse({ description: 'No reservation with that id. '})
+  @ApiConflictResponse({
+    description:
+      'The reservation cannot be checked in because it is not in CONFIRMED state.',
+  })
+  checkInReservation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reservationsService.checkInReservation(id);
+  }
 }

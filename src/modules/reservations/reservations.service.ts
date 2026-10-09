@@ -386,4 +386,27 @@ export class ReservationsService {
 
     return this.reservationRepository.save(reservation);
   }
+
+  async checkInReservation(id: string): Promise<Reservation> {
+    const reservation = await this.findOne(id);
+
+    if (
+      reservation.status === ReservationStatus.CANCELLED ||
+      reservation.status === ReservationStatus.NO_SHOW ||
+      reservation.status === ReservationStatus.CHECKED_IN ||
+      reservation.status === ReservationStatus.COMPLETED ||
+      reservation.status === ReservationStatus.PENDING
+    ) {
+      throw new ConflictException({
+        error: `Reservation with id "${id}" cannot be checked in as it is already ${reservation.status}`,
+        from: reservation.status
+      });
+    }
+
+    reservation.status = ReservationStatus.CHECKED_IN;
+    const checkedIn = new Date();
+    reservation.checkedInAt = checkedIn;
+
+    return this.reservationRepository.save(reservation);
+  }
 }

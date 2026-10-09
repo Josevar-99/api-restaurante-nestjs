@@ -103,4 +103,8 @@ export class Reservation {
   @ApiProperty({ description: 'Confirmation timestamp, if confirmed' })
   @Column({ type: 'timestamptz', nullable: true })
   confirmedAt: Date | null;
+
+  @ApiProperty({ description: 'Check-in timestamp, if checked in' })
+  @Column({ type: 'timestamptz', nullable: true })
+  checkedInAt: Date | null;
 }
