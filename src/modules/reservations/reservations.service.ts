@@ -150,7 +150,7 @@ export class ReservationsService {
   async update(id: string, dto: UpdateReservationDto): Promise<Reservation> {
     const reservation = await this.findOne(id);
 
-    // RN-057: El sistema rechaza cualquier intento de modificación si está en un estado terminal
+    // RN-057: System rejects any attempt to modify if it's in a terminal state
     const terminalStatuses = [
       ReservationStatus.CANCELLED,
       ReservationStatus.NO_SHOW,
@@ -163,39 +163,39 @@ export class ReservationsService {
       });
     }
 
-    // Validar que la cantidad de personas sea válida si se envía (RN-054)
+    // RN-054: Validate that the number of guests is valid if provided
     if (dto.guests !== undefined) {
       this.assertGuestsWithinLimits(dto.guests);
     }
 
-    // Determinar los nuevos valores objetivos (o mantener los actuales si no vienen en el DTO)
+    // Determine new target values (or keep current ones if not provided in DTO)
     const nextDate = dto.date ?? reservation.date;
     const nextTime = dto.time ?? reservation.time;
     const nextGuests = dto.guests ?? reservation.guests;
 
-    // RN-053: Si se envían date o time, la nueva fecha/hora debe estar en el futuro
+    // RN-053: If date or time are provided, the new date/time must be in the future
     if (dto.date !== undefined || dto.time !== undefined) {
       this.assertNotInThePast(nextDate, nextTime);
     }
 
-    // Evaluar si hay un cambio que requiera disparar la lógica de revalidación de disponibilidad (RN-055)
+    // RN-055: Evaluate if there's a change that requires triggering availability re-validation logic
     const hasSchedulingChange =
       (dto.date !== undefined && dto.date !== reservation.date) ||
       (dto.time !== undefined && dto.time !== reservation.time) ||
       (dto.guests !== undefined && dto.guests !== reservation.guests);
 
-    // Preparar el objeto con los datos de contacto parciales comunes
+    // Prepare object with common partial contact data
     const patch: Partial<Reservation> = {};
     if (dto.customerName !== undefined)
       patch.customerName = dto.customerName.trim();
     if (dto.phone !== undefined) patch.phone = dto.phone.trim();
     if (dto.email !== undefined) patch.email = dto.email.trim().toLowerCase();
 
-    // Si NO hay cambios de horario o capacidad, simplemente aplicamos datos de contacto y guardamos
+    // If there are NO scheduling or capacity changes, simply apply contact data and save
     if (!hasSchedulingChange) {
       Object.assign(reservation, patch);
       if (dto.guests !== undefined) {
-        // Si mandaron el mismo número de guests, solo nos aseguramos de que siga cabiendo en la mesa actual
+        // If they sent the same number of guests, we just ensure it still fits in the current table
         const table = reservation.table;
         if (table && !this.availability.hasEnoughCapacity(table, dto.guests)) {
           throw new ConflictException({
@@ -208,11 +208,11 @@ export class ReservationsService {
       return this.reservationRepository.save(reservation);
     }
 
-    // Si SÍ hay cambios de fecha, hora o personas, ejecutamos la revalidación bajo una transacción
+    // If there ARE changes in date, time, or guests, execute re-validation under a transaction
     return this.reservationRepository.manager.transaction(async (manager) => {
       const durationMinutes = reservation.durationMinutes;
 
-      // Buscamos disponibilidad para las nuevas condiciones (RN-055 / RN-056)
+      // Search for availability under new conditions (RN-055 / RN-056)
       const { table, reason } = await this.availability.search(
         {
           guests: nextGuests,
@@ -233,13 +233,13 @@ export class ReservationsService {
         });
       }
 
-      // Aplicamos los cambios validados al registro de la reserva
+      // Apply validated changes to the reservation record
       Object.assign(reservation, patch);
       reservation.date = nextDate;
       reservation.time = nextTime;
       reservation.guests = nextGuests;
       reservation.tableId = table.id;
-      reservation.table = table; // Sincronizamos la entidad cargada en memoria
+      reservation.table = table; // Sync the loaded entity in memory
 
       return manager.save(Reservation, reservation);
     });
