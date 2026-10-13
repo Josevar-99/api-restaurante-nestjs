@@ -207,4 +207,26 @@ export class ReservationsController {
   confirmReservation(@Param('id', ParseUUIDPipe) id: string) {
     return this.reservationsService.confirmReservation(id);
   }
+
+  @Patch(':id/no-show')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Mark a reservation as no-show (HU-013)',
+    description:
+      'Moves an existing CONFIRMED reservation to NO_SHOW state if the current time ' +
+      'exceeds the restaurant tolerance buffer (RN-077, RN-078). Releases the table lock.',
+  })
+  @ApiOkResponse({
+    description: 'The reservation has been successfully marked as NO_SHOW.',
+    type: Reservation,
+  })
+  @ApiBadRequestResponse({
+    description: 'The tolerance time buffer has not expired yet (RN-078) or the ID is invalid.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The reservation with the provided ID does not exist (RN-076).',
+  })
+  markAsNoShow(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reservationsService.markAsNoShow(id);
+  }
 }

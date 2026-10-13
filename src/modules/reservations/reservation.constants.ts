@@ -6,10 +6,10 @@
  */
 
 /** Accepted `date` format: calendar day only, e.g. `2026-09-20`. */
-export const RESERVATION_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+export const RESERVATION_DATE_REGEX = /^\d{4}-\d{2}-\d{2}\$/;
 
 /** Accepted `time` format: 24 hour clock, e.g. `19:00`. */
-export const RESERVATION_TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+export const RESERVATION_TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)\$/;
 
 /**
  * Length of a sitting used when the client does not send `durationMinutes`.
@@ -22,7 +22,10 @@ export const DEFAULT_DURATION_MINUTES = 120;
 export const MIN_DURATION_MINUTES = 15;
 export const MAX_DURATION_MINUTES = 480;
 
-/** Business rules referenced by their identifiers in HU-007. */
+/** Time tolerance in minutes allowed before marking a reservation as NO_SHOW (RN-078). */
+export const NO_SHOW_TOLERANCE_MINUTES = 15;
+
+/** Business rules referenced by their identifiers in HU-007 and HU-013. */
 export const BUSINESS_RULES = {
   /** RN-042: a reservation cannot be registered for a past date/time. */
   NO_PAST_DATE_TIME: 'RN-042',
@@ -36,6 +39,12 @@ export const BUSINESS_RULES = {
   INITIAL_STATUS_PENDING: 'RN-046',
   /** RN-047: the assigned table must be operational. */
   TABLE_OPERATIONAL: 'RN-047',
+  
+  /** HU-013 Rules for No-Show operations */
+  /** RN-077: Only reservations whose status is CONFIRMED can be marked as NO_SHOW. */
+  ONLY_CONFIRMED_ALLOWED: 'RN-077',
+  /** RN-078: Current time must be greater than reservation date + tolerance. */
+  TOLERANCE_NOT_EXCEEDED: 'RN-078',
 } as const;
 
 /**

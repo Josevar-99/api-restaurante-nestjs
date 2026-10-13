@@ -448,4 +448,44 @@ export class ReservationsService {
 
     return this.reservationRepository.save(reservation);
   }
+
+  // Mark a reservation as NO_SHOW if the client did not present within the tolerance buffer (HU-013).
+  async markAsNoShow(id: string): Promise<Reservation> {
+    const reservation = await this.findOne(id);
+
+    // RN-077: Only reservations whose current status is CONFIRMED can be marked as NO_SHOW
+    if (reservation.status !== ReservationStatus.CONFIRMED) {
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: `Cannot mark NO_SHOW: Reservation is in ${reservation.status} state instead of CONFIRMED (RN-077).`,
+        rule: BUSINESS_RULES.ONLY_CONFIRMED_ALLOWED,
+      });
+    }
+
+    // RN-078: Current time must be greater than reservation_date + tolerance_minutes
+    // slice(0, 5) prevents errors if Postgres returns time with seconds format (HH:mm:ss)
+    const reservationStart = combineDateAndTime(reservation.date, reservation.time.slice(0, 5));
+    
+    // El valor de tolerancia (15 minutos) viene de tus constantes
+    const toleranceMinutes = 15; 
+    const toleranceDeadline = addMinutes(reservationStart, toleranceMinutes);
+
+    if (new Date().getTime() <= toleranceDeadline.getTime()) {
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: `No se puede marcar NO_SHOW: El tiempo de tolerancia (${toleranceMinutes} min) aún no ha finalizado.`,
+        rule: BUSINESS_RULES.TOLERANCE_NOT_EXCEEDED,
+      });
+    }
+
+    // Cambiar estado a NO_SHOW (RN-079/RN-080: libera disponibilidad automáticamente al consultar)
+    reservation.status = ReservationStatus.NO_SHOW;
+    
+    // RN-081: Registrar la fecha y hora exactas de la ejecución
+    reservation.noShowAt = new Date();
+
+    return this.reservationRepository.save(reservation);
+  }
 }

@@ -103,4 +103,8 @@ export class Reservation {
   @ApiProperty({ description: 'Confirmation timestamp, if confirmed' })
   @Column({ type: 'timestamptz', nullable: true })
   confirmedAt: Date | null;
+
+  @ApiProperty({ description: 'No-show timestamp, if client did not present (RN-081)' })
+  @Column({ type: 'timestamptz', nullable: true })
+  noShowAt: Date | null;
 }
