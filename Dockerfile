@@ -14,7 +14,7 @@ FROM node:24-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production \
-    PORT=3040
+    PORT=3000
 
 COPY package*.json ./
 # Usamos install con flag de producción para evitar conflictos de sincronización estrictos
