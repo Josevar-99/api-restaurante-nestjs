@@ -111,13 +111,22 @@ export class ReservationsController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: 'Update customer details of a reservation',
-    description: 'Date, time and assigned table cannot be changed.',
+    summary: 'Modify reservation details',
+    description:
+      'Allows modifying existing reservation data. If date, time, or guests change, ' +
+      'the system automatically re-validates table availability (RN-055). ' +
+      'It maintains the current table if conditions are met, or reassigns a new one (RN-056). ' +
+      'Rejects updates if the reservation is in CANCELLED, NO_SHOW, or COMPLETED status (RN-057).',
   })
   @ApiOkResponse({ description: 'The updated reservation.', type: Reservation })
-  @ApiNotFoundResponse({ description: 'No reservation with that id.' })
+  @ApiNotFoundResponse({ description: 'No reservation with that id (RN-052).' })
+  @ApiBadRequestResponse({
+    description:
+      'Validation failed, or the new date/time is in the past (RN-053).',
+  })
   @ApiConflictResponse({
-    description: 'The party no longer fits the assigned table.',
+    description:
+      'No tables available for the new slot, or schedule conflicts arise (RN-058).',
   })
   update(
     @Param('id', ParseUUIDPipe) id: string,

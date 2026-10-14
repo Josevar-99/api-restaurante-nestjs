@@ -78,7 +78,7 @@ Examples of valid categories include: `Appetizers`, `Main Courses`, `Beverages`,
 
 The module includes unit tests for both the controller and the service:
 
-![alt text](<Captura desde 2026-09-23 13-48-24.png>)
+![alt text](./img/Captura%20desde%202026-09-23%2013-48-24.png)
 
 - `src/category/category.controller.spec.ts`
 - `src/category/category.service.spec.ts`
@@ -91,6 +91,6 @@ These tests cover:
 - category status updates
 - missing-resource handling
 
-![alt text](image.png)
+![alt text](./img/image.png)
 
 The complete API contract is also documented with Swagger at `/api/docs` while the application is running.
