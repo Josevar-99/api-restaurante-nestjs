@@ -31,13 +31,13 @@ export class TablesService {
     return this.repo.find({ where, order: { tableNumber: 'ASC' } });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const t = await this.repo.findOneBy({ id });
     if (!t) throw new NotFoundException(`Mesa ${id} no encontrada`);
     return t;
   }
 
-  async update(id: number, dto: UpdateTableDto) {
+  async update(id: string, dto: UpdateTableDto) {
     const t = await this.findOne(id);
     if (dto.tableNumber !== undefined && dto.tableNumber !== t.tableNumber) {
       await this.assertNumberFree(dto.tableNumber);
@@ -45,13 +45,13 @@ export class TablesService {
     return this.repo.save(Object.assign(t, dto));
   }
 
-  async updateStatus(id: number, status: TableStatus) {
+  async updateStatus(id: string, status: TableStatus) {
     const t = await this.findOne(id);
     t.status = status;
     return this.repo.save(t);
   }
 
-  async assertTableIsUsable(id: number) {
+  async assertTableIsUsable(id: string) {
     const t = await this.findOne(id);
     if (t.status === 'OUT_OF_SERVICE') {
       throw new ConflictException(`Mesa ${t.tableNumber} fuera de servicio`);

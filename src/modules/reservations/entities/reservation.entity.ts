@@ -68,7 +68,7 @@ export class Reservation {
 
   @ApiProperty({ description: 'Identifier of the assigned table', example: 3 })
   @Column({ type: 'int' })
-  tableId: number;
+  tableId: string;
 
   @ApiProperty({ description: 'Assigned table, included in every response' })
   @ManyToOne(() => TableEntity, { eager: true, onDelete: 'RESTRICT' })
