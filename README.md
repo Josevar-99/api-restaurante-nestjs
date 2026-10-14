@@ -43,7 +43,7 @@ POSTGRES_PASSWORD=changeme
 CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
-`POSTGRES_HOST=localhost` es el valor para ejecutar la app o el CLI de migraciones desde tu máquina. Dentro de Docker Compose el host es `postgres` y lo define el propio `docker-compose.yml`.
+`POSTGRES_HOST=localhost` es el valor para ejecutar la app, el CLI de migraciones o los seeds desde tu máquina. Dentro de Docker Compose el host es `postgres` y lo define el propio `docker-compose.yml`.
 
 ## Levantar el proyecto con Docker
 
@@ -64,6 +64,7 @@ La API queda disponible en `http://localhost:3000/api/v1`.
 ```bash
 docker compose up -d postgres
 npm run migration:run
+npm run seed          # opcional: carga datos de prueba
 npm run start:dev
 ```
 
@@ -84,7 +85,7 @@ El esquema se gestiona con migraciones de TypeORM. `synchronize` está en `false
 - Las migraciones viven en `src/database/migrations/`.
 - El CLI usa `src/database/data-source.ts`, que reutiliza `EnvConfig` y trabaja sobre `dist/`. Por eso cada script ejecuta `npm run build` antes.
 - Todo cambio estructural de la base de datos se hace mediante una migración revisada en PR.
-- Los seeds se mantienen separados de las migraciones de esquema.
+- Los seeds se mantienen separados de las migraciones de esquema (ver la sección siguiente).
 
 ### Comandos
 
@@ -131,6 +132,25 @@ npm run migration:run
 - `getaddrinfo EAI_AGAIN postgres`: el CLI corre en tu máquina y `POSTGRES_HOST` apunta a `postgres`. Usa `POSTGRES_HOST=localhost` en `.env`. Si ya lo tienes así, revisa que no haya una variable exportada en la terminal (`echo $POSTGRES_HOST`), porque no se sobrescribe.
 - `migration:generate` sale vacía sin motivo: el build está desactualizado. Si `dist/` queda vacío tras compilar, borra `tsconfig.build.tsbuildinfo` y vuelve a compilar.
 
+## Seeds (datos de prueba)
+
+Los seeds cargan datos de ejemplo (categorías, mesas y productos) y están separados de las migraciones: las migraciones crean el esquema y los seeds llenan datos. Viven en `src/database/seeds/seed.ts` y reutilizan `src/database/data-source.ts`.
+
+```bash
+docker compose up -d postgres
+npm run migration:run   # primero el esquema
+npm run seed            # luego los datos
+```
+
+Reglas:
+
+- El orden es siempre migraciones primero y seeds después, porque el seed necesita que las tablas existan.
+- Los seeds nunca se ejecutan al iniciar la aplicación ni dentro de una migración de esquema.
+- Son idempotentes: se pueden ejecutar varias veces sin duplicar datos (`upsert` sobre `categories.name` y `tables.tableNumber`; los productos se insertan solo si no existen).
+- El script se niega a ejecutarse si `NODE_ENV=production`.
+- Para empezar desde cero en local: `docker compose down -v`, `npm run migration:run` y `npm run seed`.
+- Para agregar datos nuevos, edita los arreglos de `seed.ts`. Los valores de `zone` y `status` de las mesas deben pertenecer a `src/modules/tables/constants/table.constants.ts`.
+
 ## Pruebas
 
 - `npm test`: pruebas unitarias.
@@ -151,6 +171,7 @@ docker compose exec postgres createdb -U restaurant_user restaurant_test
 - `npm test`: pruebas unitarias con Jest
 - `npm run test:e2e`: pruebas e2e con Jest sobre la base de pruebas
 - `npm run migration:*`: gestión de migraciones (ver sección anterior)
+- `npm run seed`: carga datos de prueba (ver sección Seeds)
 
 ## Estructura del proyecto
 
@@ -159,7 +180,8 @@ src/
 ├── config/          # Configuración y validación de variables de entorno
 ├── database/
 │   ├── data-source.ts   # DataSource del CLI de TypeORM
-│   └── migrations/      # Migraciones versionadas
+│   ├── migrations/      # Migraciones versionadas
+│   └── seeds/           # Seeds de datos de prueba
 ├── modules/         # Módulos de dominio (health, reservas, pedidos, etc.)
 └── main.ts
 ```
