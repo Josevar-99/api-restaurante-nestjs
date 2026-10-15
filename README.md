@@ -152,15 +152,17 @@ Reglas:
 - Para agregar datos nuevos, edita los arreglos de `seed.ts`. Los valores de `zone` y `status` de las mesas deben pertenecer a `src/modules/tables/constants/table.constants.ts`.
 
 ## Pruebas
+Antes de ejecutar los test se ejecuta este comando
+```bash
+docker compose exec postgres createdb -U restaurant_user restaurant_test
+```
 
 - `npm test`: pruebas unitarias.
 - `npm run test:e2e`: migra la base `restaurant_test` y ejecuta las pruebas e2e contra ella.
 
 La base `restaurant_test` se crea una sola vez:
 
-```bash
-docker compose exec postgres createdb -U restaurant_user restaurant_test
-```
+
 
 ## Scripts disponibles
 

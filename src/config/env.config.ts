@@ -8,7 +8,7 @@
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
     uuidExtension: 'pgcrypto' as const,
-    synchronize: false,
+    synchronize: true,
   },
   corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? [],
   observe: {},
