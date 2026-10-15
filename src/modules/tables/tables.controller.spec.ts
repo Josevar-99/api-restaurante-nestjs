@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { TablesController } from './tables.controller.js';
 import { TablesService } from './tables.service.js';
+import { mock } from 'node:test';
 
 describe('TablesController', () => {
   let controller: TablesController;
@@ -47,19 +48,22 @@ describe('TablesController', () => {
   });
 
   it('findOne() delega en el servicio con el id numérico', async () => {
-    await controller.findOne(7);
-    expect(service.findOne).toHaveBeenCalledWith(7);
+    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    await controller.findOne(mockid);
+    expect(service.findOne).toHaveBeenCalledWith(mockid);
   });
 
   it('update() delega en el servicio con id y DTO', async () => {
     const dto = { capacity: 8 };
-    await controller.update(7, dto);
-    expect(service.update).toHaveBeenCalledWith(7, dto);
+    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    await controller.update(mockid, dto);
+    expect(service.update).toHaveBeenCalledWith(mockid, dto);
   });
 
   it('updateStatus() envía el estado del DTO al servicio', async () => {
     const dto = { status: 'OCCUPIED' } as const;
-    await controller.updateStatus(7, dto);
-    expect(service.updateStatus).toHaveBeenCalledWith(7, dto.status);
+    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    await controller.updateStatus(mockid, dto);
+    expect(service.updateStatus).toHaveBeenCalledWith(mockid, dto.status);
   });
 });
