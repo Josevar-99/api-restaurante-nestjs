@@ -48,21 +48,21 @@ describe('TablesController', () => {
   });
 
   it('findOne() delega en el servicio con el id numérico', async () => {
-    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    const mockid = '31d85014-5c67-426c-8352-1766204cbf0c';
     await controller.findOne(mockid);
     expect(service.findOne).toHaveBeenCalledWith(mockid);
   });
 
   it('update() delega en el servicio con id y DTO', async () => {
     const dto = { capacity: 8 };
-    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    const mockid = '31d85014-5c67-426c-8352-1766204cbf0c';
     await controller.update(mockid, dto);
     expect(service.update).toHaveBeenCalledWith(mockid, dto);
   });
 
   it('updateStatus() envía el estado del DTO al servicio', async () => {
     const dto = { status: 'OCCUPIED' } as const;
-    const mockid ='31d85014-5c67-426c-8352-1766204cbf0c'
+    const mockid = '31d85014-5c67-426c-8352-1766204cbf0c';
     await controller.updateStatus(mockid, dto);
     expect(service.updateStatus).toHaveBeenCalledWith(mockid, dto.status);
   });
