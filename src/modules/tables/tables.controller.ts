@@ -44,20 +44,22 @@ export class TablesController {
     description: 'Table was created correctly.',
   })
   @ApiBadRequestResponse({
-    description: 'Invalid input data, failed validation rules (RN-042, RN-043, etc.).',
+    description:
+      'Invalid input data, failed validation rules (RN-042, RN-043, etc.).',
   })
   @ApiConflictResponse({
-    description: 'No table is available for the requested party and slot (RN-045).',
+    description:
+      'No table is available for the requested party and slot (RN-045).',
   })
   @Post()
-  
   create(@Body() dto: CreateTableDto) {
     return this.service.create(dto);
   }
 
   @ApiOperation({
     summary: 'Get all tables',
-    description: 'Retrieves a list of tables matching the specified filter criteria.',
+    description:
+      'Retrieves a list of tables matching the specified filter criteria.',
   })
   @ApiOkResponse({
     description: 'List of tables retrieved successfully.',
@@ -69,7 +71,8 @@ export class TablesController {
 
   @ApiOperation({
     summary: 'Get a table by ID',
-    description: 'Retrieval details of a specific table using its unique identifier.',
+    description:
+      'Retrieval details of a specific table using its unique identifier.',
   })
   @ApiOkResponse({
     description: 'Table found and returned successfully.',
@@ -81,7 +84,7 @@ export class TablesController {
     name: 'id',
     description: 'Unique identifier of the table',
     type: String,
-    example: "31d85014-5c67-426c-8352-1766204cbf0c",
+    example: '31d85014-5c67-426c-8352-1766204cbf0c',
   })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -105,19 +108,17 @@ export class TablesController {
     name: 'id',
     description: 'Unique identifier of the table to update',
     type: String,
-    example: "31d85014-5c67-426c-8352-1766204cbf0c",
+    example: '31d85014-5c67-426c-8352-1766204cbf0c',
   })
   @Patch(':id')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateTableDto,
-  ) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateTableDto) {
     return this.service.update(String(id), dto);
   }
 
   @ApiOperation({
     summary: 'Update table status',
-    description: 'Updates specifically the operational status of a table (e.g., active, out of service).',
+    description:
+      'Updates specifically the operational status of a table (e.g., active, out of service).',
   })
   @ApiOkResponse({
     description: 'Table status updated successfully.',
@@ -132,7 +133,7 @@ export class TablesController {
     name: 'id',
     description: 'Unique identifier of the table to change its status',
     type: String,
-    example: "31d85014-5c67-426c-8352-1766204cbf0c",
+    example: '31d85014-5c67-426c-8352-1766204cbf0c',
   })
   @Patch(':id/status')
   updateStatus(
