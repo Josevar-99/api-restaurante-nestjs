@@ -29,7 +29,7 @@ export interface AvailabilitySearchResult {
   /** `AVAILABLE` when `table` was found, otherwise the blocking reason. */
   reason: UnavailableReason;
   /** Ids of tables that fit but are already booked for that window (RN-045). */
-  tablesWithConflict: number[];
+  tablesWithConflict: string[];
 }
 
 /** Result of listing every table that can be booked for a slot. */
@@ -39,7 +39,7 @@ export interface AvailableTablesResult {
   /** `AVAILABLE` when `tables` is not empty, otherwise the blocking reason. */
   reason: UnavailableReason;
   /** Ids of tables that fit but are already booked for that window. */
-  tablesWithConflict: number[];
+  tablesWithConflict: string[];
 }
 
 /** Options that control how the search is executed. */
@@ -60,7 +60,7 @@ export interface TableSearchOptions {
 interface Evaluation {
   free: TableEntity[];
   reason: UnavailableReason;
-  tablesWithConflict: number[];
+  tablesWithConflict: string[];
 }
 
 /**
@@ -198,11 +198,11 @@ export class TableAvailabilityService {
    * requested window (RN-045 / RN-040).
    */
   private async findTablesWithConflict(
-    tableIds: number[],
+    tableIds: string[],
     window: { date: string; time: string; durationMinutes: number },
     manager?: EntityManager,
-  ): Promise<Set<number>> {
-    if (tableIds.length === 0) return new Set<number>();
+  ): Promise<Set<string>> {
+    if (tableIds.length === 0) return new Set<string>();
 
     const reservations = this.reservationRepositoryFor(manager);
     const { startsAt, endsAt } = buildWindow(
@@ -222,7 +222,7 @@ export class TableAvailabilityService {
       },
     });
 
-    const busy = new Set<number>();
+    const busy = new Set<string>();
     for (const reservation of sameDay) {
       const existing = buildWindow(
         reservation.date,
