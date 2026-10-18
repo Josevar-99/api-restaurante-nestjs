@@ -4,7 +4,7 @@ import { ReservationStatus } from '../reservation-status.enum.js';
 /** Table summary embedded in reservation responses. */
 export class ReservationTableDto {
   @ApiProperty({ description: 'Table identifier', example: 3 })
-  id: number;
+  id: string;
 
   @ApiProperty({ description: 'Table number', example: 7 })
   tableNumber: number;
