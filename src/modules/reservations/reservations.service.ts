@@ -450,8 +450,8 @@ export class ReservationsService {
   }
 
   async checkInReservation(id: string): Promise<Reservation> {
-    
-      const reservation = await this.findOne(id);
+    return this.reservationRepository.manager.transaction(async (manager) => {
+      const reservation = await manager.findOneOrFail(Reservation, {where: { id }});
 
       if (
         reservation.status === ReservationStatus.CANCELLED ||
@@ -470,6 +470,7 @@ export class ReservationsService {
       const checkedIn = new Date();
       reservation.checkedInAt = checkedIn;
 
-      return this.reservationRepository.save(reservation);
-    }
+      return manager.save(Reservation, reservation);
+    });
+  }
 }
