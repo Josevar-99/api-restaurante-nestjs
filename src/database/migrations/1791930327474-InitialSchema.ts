@@ -5,10 +5,10 @@ export class InitialSchema1791930327474 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "tables" ("id" SERIAL NOT NULL, "tableNumber" integer NOT NULL, "capacity" integer NOT NULL, "zone" character varying(20) NOT NULL, "status" character varying(20) NOT NULL DEFAULT 'AVAILABLE', CONSTRAINT "UQ_eaa9451297a2492ecdbae3d2ffb" UNIQUE ("tableNumber"), CONSTRAINT "PK_7cf2aca7af9550742f855d4eb69" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "tables" ("id" uuid NOT NULL, "tableNumber" integer NOT NULL, "capacity" integer NOT NULL, "zone" character varying(20) NOT NULL, "status" character varying(20) NOT NULL DEFAULT 'AVAILABLE', CONSTRAINT "UQ_eaa9451297a2492ecdbae3d2ffb" UNIQUE ("tableNumber"), CONSTRAINT "PK_7cf2aca7af9550742f855d4eb69" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "reservations" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "customerName" character varying(150) NOT NULL, "phone" character varying(20) NOT NULL, "email" character varying(150) NOT NULL, "date" date NOT NULL, "time" TIME NOT NULL, "durationMinutes" integer NOT NULL DEFAULT '120', "guests" integer NOT NULL, "tableId" integer NOT NULL, "status" character varying(20) NOT NULL DEFAULT 'PENDING', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "cancelledAt" TIMESTAMP WITH TIME ZONE, "confirmedAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_da95cef71b617ac35dc5bcda243" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "reservations" ("uuid" uuid NOT NULL DEFAULT gen_random_uuid(), "customerName" character varying(150) NOT NULL, "phone" character varying(20) NOT NULL, "email" character varying(150) NOT NULL, "date" date NOT NULL, "time" TIME NOT NULL, "durationMinutes" integer NOT NULL DEFAULT '120', "guests" integer NOT NULL, "tableId" integer NOT NULL, "status" character varying(20) NOT NULL DEFAULT 'PENDING', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "cancelledAt" TIMESTAMP WITH TIME ZONE, "confirmedAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_da95cef71b617ac35dc5bcda243" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_reservations_date" ON "reservations"  ("date") `,
