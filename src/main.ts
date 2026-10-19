@@ -4,18 +4,21 @@ import { swaggerConfiguration } from './config/swagger.config.js';
 import * as helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { EntityNotFoundFilter } from './common/filters/entity-not-found.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet.default());
-
+  
   const configService = app.get(ConfigService);
 
   app.enableCors({
     origin: configService.get('corsOrigins'),
     credentials: true,
   });
+
+  app.useGlobalFilters(new EntityNotFoundFilter());
 
   app.setGlobalPrefix('api/v1');
 

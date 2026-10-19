@@ -32,6 +32,7 @@ import {
   UnavailableReason,
 } from './table-availability.service.js';
 import { ReservationQueryDto } from './dto/reservation-query.dto.js';
+import { TableEntity } from '../tables/entities/table.entity.js';
 
 /**
  * Human readable explanation for each way the availability search can end.
@@ -451,7 +452,7 @@ export class ReservationsService {
 
   async checkInReservation(id: string): Promise<Reservation> {
     return this.reservationRepository.manager.transaction(async (manager) => {
-      const reservation = await manager.findOneOrFail(Reservation, {where: { id }});
+      const reservation = await manager.findOneByOrFail(Reservation, { id } );
 
       if (
         reservation.status === ReservationStatus.CANCELLED ||
@@ -465,6 +466,15 @@ export class ReservationsService {
           from: reservation.status,
         });
       }
+
+      const table = await manager.findOne(TableEntity, { where: { id: reservation.tableId } } );
+      
+      if (!table) {
+        throw new NotFoundException(`Table with id "${reservation.tableId}" was not found`);
+      }
+
+      table.status = 'OCCUPIED';
+      await manager.save(TableEntity, table);
 
       reservation.status = ReservationStatus.CHECKED_IN;
       const checkedIn = new Date();

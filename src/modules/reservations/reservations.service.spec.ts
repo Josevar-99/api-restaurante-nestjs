@@ -74,6 +74,8 @@ describe('ReservationsService', () => {
   let transactionManager: {
     create: jest.Mock;
     save: jest.Mock;
+    findOneByOrFail: jest.Mock;
+    findOne: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -83,6 +85,9 @@ describe('ReservationsService', () => {
         id: '11111111-1111-4111-8111-111111111111',
         ...(data as object),
       })),
+      // Used only by checkInReservation, which reads inside the transaction.
+      findOneByOrFail: jest.fn(),
+      findOne: jest.fn(),
     };
 
     reservationRepository = {
@@ -604,6 +609,211 @@ describe('ReservationsService', () => {
       await service.updateStatus('abc', { status: ReservationStatus.PENDING });
 
       expect(reservationRepository.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cancelReservation (HU-010)', () => {
+    const storedWith = (status: ReservationStatus) =>
+      Object.assign(new Reservation(), {
+        id: 'abc',
+        status,
+        date: FUTURE_DATE,
+        time: '19:00',
+        durationMinutes: 120,
+        table: table(1, 6),
+      });
+
+    it.each([[ReservationStatus.PENDING], [ReservationStatus.CONFIRMED]])(
+      'cancels a reservation that is %s and stamps cancelledAt (RN-060/RN-064)',
+      async (status) => {
+        reservationRepository.findOneBy.mockResolvedValue(storedWith(status));
+
+        const result = await service.cancelReservation('abc');
+
+        expect(result.status).toBe(ReservationStatus.CANCELLED);
+        expect(result.cancelledAt).toBeInstanceOf(Date);
+        expect(reservationRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: ReservationStatus.CANCELLED,
+            cancelledAt: expect.any(Date),
+          }),
+        );
+      },
+    );
+
+    it.each([
+      [ReservationStatus.CANCELLED],
+      [ReservationStatus.CHECKED_IN],
+      [ReservationStatus.COMPLETED],
+      [ReservationStatus.NO_SHOW],
+    ])(
+      'rejects cancelling a reservation already %s (RN-060/RN-061)',
+      async (status) => {
+        reservationRepository.findOneBy.mockResolvedValue(storedWith(status));
+
+        const error = await rejectionOf<ConflictException>(
+          service.cancelReservation('abc'),
+        );
+
+        expect(error).toBeInstanceOf(ConflictException);
+        expect(reservationRepository.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('throws 404 when the reservation does not exist (RN-059)', async () => {
+      reservationRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(
+        service.cancelReservation('missing'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('confirmReservation (HU-011)', () => {
+    const storedWith = (status: ReservationStatus) =>
+      Object.assign(new Reservation(), {
+        id: 'abc',
+        status,
+        date: FUTURE_DATE,
+        time: '19:00',
+        durationMinutes: 120,
+        table: table(1, 6),
+      });
+
+    it('confirms a PENDING reservation and stamps confirmedAt (RN-066/RN-069)', async () => {
+      reservationRepository.findOneBy.mockResolvedValue(
+        storedWith(ReservationStatus.PENDING),
+      );
+
+      const result = await service.confirmReservation('abc');
+
+      expect(result.status).toBe(ReservationStatus.CONFIRMED);
+      expect(result.confirmedAt).toBeInstanceOf(Date);
+      expect(reservationRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: ReservationStatus.CONFIRMED,
+          confirmedAt: expect.any(Date),
+        }),
+      );
+    });
+
+    it.each([
+      [ReservationStatus.CONFIRMED],
+      [ReservationStatus.CANCELLED],
+      [ReservationStatus.CHECKED_IN],
+      [ReservationStatus.COMPLETED],
+      [ReservationStatus.NO_SHOW],
+    ])(
+      'rejects confirming a reservation that is %s (RN-066/RN-067)',
+      async (status) => {
+        reservationRepository.findOneBy.mockResolvedValue(storedWith(status));
+
+        const error = await rejectionOf<ConflictException>(
+          service.confirmReservation('abc'),
+        );
+
+        expect(error).toBeInstanceOf(ConflictException);
+        expect(reservationRepository.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('throws 404 when the reservation does not exist (RN-065)', async () => {
+      reservationRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(
+        service.confirmReservation('missing'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('checkInReservation (HU-012)', () => {
+    const storedWith = (status: ReservationStatus) =>
+      Object.assign(new Reservation(), {
+        id: 'abc',
+        status,
+        tableId: 1,
+        date: FUTURE_DATE,
+        time: '19:00',
+        durationMinutes: 120,
+      });
+
+    it('checks in a CONFIRMED reservation and occupies its table (RN-073/RN-074)', async () => {
+      transactionManager.findOneByOrFail.mockResolvedValue(
+        storedWith(ReservationStatus.CONFIRMED),
+      );
+      transactionManager.findOne.mockResolvedValue(table(1, 6));
+
+      const result = await service.checkInReservation('abc');
+
+      // The whole thing happens inside one transaction.
+      expect(reservationRepository.manager.transaction).toHaveBeenCalledTimes(
+        1,
+      );
+
+      // The table was looked up by the id stored on the reservation.
+      expect(transactionManager.findOne).toHaveBeenCalledWith(
+        TableEntity,
+        expect.objectContaining({ where: { id: 1 } }),
+      );
+
+      // Both entities were saved, each tagged with its own class.
+      expect(transactionManager.save).toHaveBeenCalledWith(
+        TableEntity,
+        expect.objectContaining({ status: 'OCCUPIED' }),
+      );
+      expect(transactionManager.save).toHaveBeenCalledWith(
+        Reservation,
+        expect.objectContaining({
+          status: ReservationStatus.CHECKED_IN,
+          checkedInAt: expect.any(Date),
+        }),
+      );
+
+      expect(result.status).toBe(ReservationStatus.CHECKED_IN);
+    });
+
+    it.each([
+      [ReservationStatus.PENDING],
+      [ReservationStatus.CANCELLED],
+      [ReservationStatus.CHECKED_IN],
+      [ReservationStatus.COMPLETED],
+      [ReservationStatus.NO_SHOW],
+    ])(
+      'rejects check-in for a reservation that is %s (RN-071/RN-075)',
+      async (status) => {
+        transactionManager.findOneByOrFail.mockResolvedValue(
+          storedWith(status),
+        );
+
+        const error = await rejectionOf<ConflictException>(
+          service.checkInReservation('abc'),
+        );
+
+        expect(error).toBeInstanceOf(ConflictException);
+        expect(transactionManager.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('throws 404 when the assigned table cannot be found (RN-072)', async () => {
+      transactionManager.findOneByOrFail.mockResolvedValue(
+        storedWith(ReservationStatus.CONFIRMED),
+      );
+      transactionManager.findOne.mockResolvedValue(null);
+
+      await expect(service.checkInReservation('abc')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(transactionManager.save).not.toHaveBeenCalled();
+    });
+
+    it('does not touch the table when the reservation state is rejected first', async () => {
+      transactionManager.findOneByOrFail.mockResolvedValue(
+        storedWith(ReservationStatus.PENDING),
+      );
+
+      await rejectionOf<ConflictException>(service.checkInReservation('abc'));
+
+      expect(transactionManager.findOne).not.toHaveBeenCalled();
     });
   });
 
