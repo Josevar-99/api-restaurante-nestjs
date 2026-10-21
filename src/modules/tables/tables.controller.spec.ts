@@ -2,7 +2,6 @@ import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { TablesController } from './tables.controller.js';
 import { TablesService } from './tables.service.js';
-import { mock } from 'node:test';
 
 describe('TablesController', () => {
   let controller: TablesController;

@@ -663,9 +663,9 @@ describe('ReservationsService', () => {
     it('throws 404 when the reservation does not exist (RN-059)', async () => {
       reservationRepository.findOneBy.mockResolvedValue(null);
 
-      await expect(
-        service.cancelReservation('missing'),
-      ).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.cancelReservation('missing')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
   });
 

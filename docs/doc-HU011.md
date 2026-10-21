@@ -131,7 +131,22 @@ Requisitos: base de datos PostgreSQL en marcha, servidor corriendo y al menos un
 - Los dos endpoints (`/cancel` y `/confirm`) aparecen con sus cuatro respuestas. ✅ completo
 - Verificar qué tipo muestra Swagger para `cancelledAt` y `confirmedAt` en el esquema de `Reservation`, ya que son `Date | null`. ✅ completo
 
----
+## Comprobación de pruebas
+ 
+Se agregó una sección de tests unitarios para `confirmReservation` en `reservations.service.spec.ts` (`describe('confirmReservation (HU-011)', ...)`), que cubre:
+ 
+- Confirmación exitosa desde `PENDING`, verificando que `confirmedAt` quede asignado.
+- Rechazo (409) desde `CONFIRMED` (ya confirmada), `CANCELLED`, `CHECKED_IN`, `COMPLETED` y `NO_SHOW`, verificando que no se llame a `save`.
+- 404 cuando el `id` no existe.
+Para correrlos:
+ 
+```bash
+npm run test -- reservations.service.spec
+```
+ 
+**Captura del resultado:**
+![alt text](./img/image-011.png) 
+![alt text](./img/image-passed.png)
 
 ## Observaciones para el equipo
 

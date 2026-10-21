@@ -452,7 +452,7 @@ export class ReservationsService {
 
   async checkInReservation(id: string): Promise<Reservation> {
     return this.reservationRepository.manager.transaction(async (manager) => {
-      const reservation = await manager.findOneByOrFail(Reservation, { id } );
+      const reservation = await manager.findOneByOrFail(Reservation, { id });
 
       if (
         reservation.status === ReservationStatus.CANCELLED ||
@@ -467,10 +467,14 @@ export class ReservationsService {
         });
       }
 
-      const table = await manager.findOne(TableEntity, { where: { id: reservation.tableId } } );
-      
+      const table = await manager.findOne(TableEntity, {
+        where: { id: reservation.tableId },
+      });
+
       if (!table) {
-        throw new NotFoundException(`Table with id "${reservation.tableId}" was not found`);
+        throw new NotFoundException(
+          `Table with id "${reservation.tableId}" was not found`,
+        );
       }
 
       table.status = 'OCCUPIED';

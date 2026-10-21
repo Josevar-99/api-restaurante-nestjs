@@ -95,6 +95,24 @@ Requisitos: base de datos PostgreSQL en marcha, servidor corriendo y al menos un
 | 10 | Revisar una reserva nunca cancelada | `cancelledAt` es `null` | ✅ completo |
 | 11 | Disponibilidad antes y después de cancelar el mismo horario (con una sola mesa candidata) | Antes: no disponible. Después: disponible | ✅ completo |
 
+## Comprobación de pruebas
+ 
+Se agregó una sección de tests unitarios para `cancelReservation` en `reservations.service.spec.ts` (`describe('cancelReservation (HU-010)', ...)`), que cubre:
+ 
+- Cancelación exitosa desde `PENDING` y desde `CONFIRMED`, verificando que `cancelledAt` quede asignado.
+- Rechazo (409) desde `CANCELLED`, `CHECKED_IN`, `COMPLETED` y `NO_SHOW`, verificando que no se llame a `save`.
+- 404 cuando el `id` no existe.
+Para correrlos:
+ 
+```bash
+npm run test -- reservations.service.spec
+```
+ 
+**Captura del resultado:**
+![alt text](./img/image-010.png) 
+![alt text](./img/image-passed.png)
+
+
 ## Observaciones para el equipo
 
 - `PATCH /reservations/{id}/status` permite pasar una reserva a `CANCELLED`, pero **no registra `cancelledAt`** y, si la reserva ya estaba cancelada, responde 200 en lugar del 409 que pide RN-060. Conviene decidir si esa ruta delega en `cancelReservation` o si deja de aceptar ese destino.

@@ -218,7 +218,7 @@ export class ReservationsController {
   @ApiBadRequestResponse({
     description: 'The provided reservation ID is not a valid UUID.',
   })
-  @ApiNotFoundResponse({ description: 'No reservation with that id. '})
+  @ApiNotFoundResponse({ description: 'No reservation with that id. ' })
   @ApiConflictResponse({
     description:
       'The reservation cannot be checked in because it is not in CONFIRMED state.',
